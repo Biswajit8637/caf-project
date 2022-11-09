@@ -1,0 +1,326 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.ServiceModel;
+using System.Text;
+using System.Threading.Tasks;
+using SAMS_PG_Entity;
+using SAMS_PG_DAL;
+using System.Data;
+
+namespace SAMS_PG_BLL
+{
+    public partial interface ISAMSPGBusiness
+    {
+        [OperationContract]
+        [FaultContract(typeof(CustomFault))]
+        string AddBasicInformation(CAF obj);
+
+        [OperationContract]
+        [FaultContract(typeof(CustomFault))]
+        string AddAdditionalDetails(CAF obj);
+
+        [OperationContract]
+        [FaultContract(typeof(CustomFault))]
+        string AddQualificationDetails(CAF obj);
+
+        [OperationContract]
+        [FaultContract(typeof(CustomFault))]
+        string AddPhoto(CAF obj);
+
+        [OperationContract]
+        [FaultContract(typeof(CustomFault))]
+        List<CAF> ViewCAFData(CAF objCAF);
+
+        [OperationContract]
+        [FaultContract(typeof(CustomFault))]
+        List<CAF> ViewSpotCAFData(CAF objCAF);
+
+        [OperationContract]
+        [FaultContract(typeof(CustomFault))]
+        List<CAF> BSEBoardDetails(CAF objCAF);
+
+        [OperationContract]
+        [FaultContract(typeof(CustomFault))]
+        string EditQualificationDetails(CAF obj);
+
+        [OperationContract]
+        [FaultContract(typeof(CustomFault))]
+        string AddSPOTQualificationDetails(CAF obj);
+
+        /// <summary>
+        /// Created by Ritika Lath on 19th Oct 2020 to get the applicantdetails in portal
+        /// </summary>
+        /// <param name="strAction">action</param>
+        /// <param name="strAppNo">application no</param>
+        /// <returns></returns>
+        [OperationContract]
+        [FaultContract(typeof(CustomFault))]
+        DataSet GetDetailsByApplicantNo(string strAction, string strAppNo);
+
+
+        /// <summary>
+        /// Created By Ritika lath on 20th Oct 2020 to update the applicant details in portal
+        /// </summary>
+        /// <param name="objApplicant">CAF Object</param>
+        /// <returns>status as to whether record was updated or not</returns>
+        [OperationContract]
+        [FaultContract(typeof(CustomFault))]
+
+        string UpdateApplicantInfo_Portal(CAF objApplicant);
+
+        [OperationContract]
+        [FaultContract(typeof(CustomFault))]
+        DataSet ViewApplicantDetailsForErrorCorrection(CAF objCAF);
+
+        [OperationContract]
+        [FaultContract(typeof(CustomFault))]
+        string UpdateApplicantDetailsForErrorCorrection(CAF obj);
+
+        [OperationContract]
+        [FaultContract(typeof(CustomFault))]
+        string UpdateCollegePreference(CAF obj);
+
+        [OperationContract]
+        [FaultContract(typeof(CustomFault))]
+        string UpdateApplicantDetailsForErrorMarkCorrection(CAF obj);
+        [OperationContract]
+        [FaultContract(typeof(CustomFault))]
+        DataSet ViewApplicantDetailsForErrorMarkCorrection(CAF objCAF);
+
+    }
+    public partial class SAMSPGBusiness : ISAMSPGBusiness
+    {
+        public string AddBasicInformation(CAF objCAF)
+        {
+            try
+            {
+                CAFDAL objCAFDAL = new CAFDAL();
+                return objCAFDAL.AddBasicInformation(objCAF);
+            }
+
+            catch (Exception ex)
+            {
+                CustomFault customMsg = new CustomFault(ex.Message);
+                throw new FaultException<CustomFault>(customMsg, new FaultReason(customMsg.ErrorMsg), new FaultCode("Sender"));
+            }
+        }
+        public string UpdateApplicantDetailsForErrorMarkCorrection(CAF objCAF)
+        {
+            try
+            {
+                CAFDAL objCAFDAL = new CAFDAL();
+                return objCAFDAL.UpdateApplicantDetailsForErrorMarkCorrection(objCAF);
+            }
+
+            catch (Exception ex)
+            {
+                CustomFault customMsg = new CustomFault(ex.Message);
+                throw new FaultException<CustomFault>(customMsg, new FaultReason(customMsg.ErrorMsg), new FaultCode("Sender"));
+            }
+        }
+        public DataSet ViewApplicantDetailsForErrorMarkCorrection(CAF objCAF)
+        {
+            try
+            {
+                CAFDAL obj = new CAFDAL();
+                return obj.ViewApplicantDetailsForErrorCorrection(objCAF);
+            }
+            catch (Exception ex)
+            {
+                CustomFault customMsg = new CustomFault(ex.Message);
+                throw new FaultException<CustomFault>(customMsg, new FaultReason(customMsg.ErrorMsg), new FaultCode("Sender"));
+            }
+        }
+
+        public string AddAdditionalDetails(CAF objCAF)
+        {
+            try
+            {
+                CAFDAL objCAFDAL = new CAFDAL();
+                return objCAFDAL.AddAdditionalDetails(objCAF);
+            }
+
+            catch (Exception ex)
+            {
+                CustomFault customMsg = new CustomFault(ex.Message);
+                throw new FaultException<CustomFault>(customMsg, new FaultReason(customMsg.ErrorMsg), new FaultCode("Sender"));
+            }
+        }
+
+        public string AddQualificationDetails(CAF objCAF)
+        {
+            try
+            {
+                CAFDAL objCAFDAL = new CAFDAL();
+                return objCAFDAL.AddQualificationDetails(objCAF);
+            }
+
+            catch (Exception ex)
+            {
+                CustomFault customMsg = new CustomFault(ex.Message);
+                throw new FaultException<CustomFault>(customMsg, new FaultReason(customMsg.ErrorMsg), new FaultCode("Sender"));
+            }
+        }
+
+        public string AddPhoto(CAF objCAF)
+        {
+            try
+            {
+                CAFDAL objCAFDAL = new CAFDAL();
+                return objCAFDAL.AddPhoto(objCAF);
+            }
+
+            catch (Exception ex)
+            {
+                CustomFault customMsg = new CustomFault(ex.Message);
+                throw new FaultException<CustomFault>(customMsg, new FaultReason(customMsg.ErrorMsg), new FaultCode("Sender"));
+            }
+        }
+
+        public List<CAF> ViewCAFData(CAF objCAF)
+        {
+            try
+            {
+                CAFDAL obj = new CAFDAL();
+                return obj.ViewCAFData(objCAF);
+            }
+            catch (Exception ex)
+            {
+                CustomFault customMsg = new CustomFault(ex.Message);
+                throw new FaultException<CustomFault>(customMsg, new FaultReason(customMsg.ErrorMsg), new FaultCode("Sender"));
+            }
+        }
+
+        public List<CAF> ViewSpotCAFData(CAF objCAF)
+        {
+            try
+            {
+                CAFDAL obj = new CAFDAL();
+                return obj.ViewSpotCAFData(objCAF);
+            }
+            catch (Exception ex)
+            {
+                CustomFault customMsg = new CustomFault(ex.Message);
+                throw new FaultException<CustomFault>(customMsg, new FaultReason(customMsg.ErrorMsg), new FaultCode("Sender"));
+            }
+        }
+        public List<CAF> BSEBoardDetails(CAF objCAF)
+        {
+            try
+            {
+                CAFDAL obj = new CAFDAL();
+                return obj.BSEBoardDetails(objCAF);
+            }
+            catch (Exception ex)
+            {
+                CustomFault customMsg = new CustomFault(ex.Message);
+                throw new FaultException<CustomFault>(customMsg, new FaultReason(customMsg.ErrorMsg), new FaultCode("Sender"));
+            }
+        }
+
+        public string EditQualificationDetails(CAF objCAF)
+        {
+            try
+            {
+                CAFDAL objCAFDAL = new CAFDAL();
+                return objCAFDAL.EditQualificationDetails(objCAF);
+            }
+
+            catch (Exception ex)
+            {
+                CustomFault customMsg = new CustomFault(ex.Message);
+                throw new FaultException<CustomFault>(customMsg, new FaultReason(customMsg.ErrorMsg), new FaultCode("Sender"));
+            }
+        }
+
+        public string AddSPOTQualificationDetails(CAF objCAF)
+        {
+            try
+            {
+                CAFDAL objCAFDAL = new CAFDAL();
+                return objCAFDAL.AddSPOTQualificationDetails(objCAF);
+            }
+
+            catch (Exception ex)
+            {
+                CustomFault customMsg = new CustomFault(ex.Message);
+                throw new FaultException<CustomFault>(customMsg, new FaultReason(customMsg.ErrorMsg), new FaultCode("Sender"));
+            }
+        }
+
+        public DataSet GetDetailsByApplicantNo(string strAction, string strAppNo)
+        {
+            try
+            {
+                CAFDAL objCAFDAL = new CAFDAL();
+                return objCAFDAL.GetDetailsByApplicantNo(strAction, strAppNo);
+            }
+
+            catch (Exception ex)
+            {
+                CustomFault customMsg = new CustomFault(ex.Message);
+                throw new FaultException<CustomFault>(customMsg, new FaultReason(customMsg.ErrorMsg), new FaultCode("Sender"));
+            }
+        }
+
+
+        public string UpdateApplicantInfo_Portal(CAF objApplicant)
+        {
+            try
+            {
+                CAFDAL objCAFDAL = new CAFDAL();
+                return objCAFDAL.UpdateApplicantInfo_Portal(objApplicant);
+            }
+
+            catch (Exception ex)
+            {
+                CustomFault customMsg = new CustomFault(ex.Message);
+                throw new FaultException<CustomFault>(customMsg, new FaultReason(customMsg.ErrorMsg), new FaultCode("Sender"));
+            }
+        }
+
+        public DataSet ViewApplicantDetailsForErrorCorrection(CAF objCAF)
+        {
+            try
+            {
+                CAFDAL obj = new CAFDAL();
+                return obj.ViewApplicantDetailsForErrorCorrection(objCAF);
+            }
+            catch (Exception ex)
+            {
+                CustomFault customMsg = new CustomFault(ex.Message);
+                throw new FaultException<CustomFault>(customMsg, new FaultReason(customMsg.ErrorMsg), new FaultCode("Sender"));
+            }
+        }
+
+        public string UpdateApplicantDetailsForErrorCorrection(CAF objCAF)
+        {
+            try
+            {
+                CAFDAL objCAFDAL = new CAFDAL();
+                return objCAFDAL.UpdateApplicantDetailsForErrorCorrection(objCAF);
+            }
+
+            catch (Exception ex)
+            {
+                CustomFault customMsg = new CustomFault(ex.Message);
+                throw new FaultException<CustomFault>(customMsg, new FaultReason(customMsg.ErrorMsg), new FaultCode("Sender"));
+            }
+        }
+        public string UpdateCollegePreference(CAF objCAF)
+        {
+            try
+            {
+                CAFDAL objCAFDAL = new CAFDAL();
+                return objCAFDAL.UpdateCollegePreference(objCAF);
+            }
+
+            catch (Exception ex)
+            {
+                CustomFault customMsg = new CustomFault(ex.Message);
+                throw new FaultException<CustomFault>(customMsg, new FaultReason(customMsg.ErrorMsg), new FaultCode("Sender"));
+            }
+        }
+    }
+}
