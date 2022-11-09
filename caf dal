@@ -1,0 +1,573 @@
+using Dapper;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using SAMS_PG_Entity;
+using System.Data.SqlClient;
+
+namespace SAMS_PG_DAL
+{
+    public partial interface ICAFDAL
+    {
+        string UpdateApplicantDetailsForErrorMarkCorrection(CAF obj);
+
+        DataSet ViewApplicantDetailsForErrorMarkCorrection(CAF objCAF);
+
+        string AddBasicInformation(CAF obj);
+        string AddAdditionalDetails(CAF obj);
+        string AddQualificationDetails(CAF obj);
+        string AddSPOTQualificationDetails(CAF obj);
+        string AddPhoto(CAF obj);
+        List<CAF> ViewCAFData(CAF objCAF);
+        List<CAF> ViewSpotCAFData(CAF objCAF);
+        List<CAF> BSEBoardDetails(CAF objCAF);
+        string EditQualificationDetails(CAF obj);
+
+        /// <summary>
+        /// Created by Ritika Lath on 19th Oct 2020 to get the applicantdetails in portal
+        /// </summary>
+        /// <param name="strAction">action</param>
+        /// <param name="strAppNo">application no</param>
+        /// <returns></returns>
+        DataSet GetDetailsByApplicantNo(string strAction, string strAppNo);
+
+        /// <summary>
+        /// Created By Ritika lath on 20th Oct 2020 to update the applicant details in portal
+        /// </summary>
+        /// <param name="objApplicant">CAF Object</param>
+        /// <returns>status as to whether record was updated or not</returns>
+        string UpdateApplicantInfo_Portal(CAF objApplicant);
+        DataSet ViewApplicantDetailsForErrorCorrection(CAF objCAF);
+
+        string UpdateApplicantDetailsForErrorCorrection(CAF obj);
+        string UpdateCollegePreference(CAF objCAF);
+    }
+    public partial class CAFDAL : ICAFDAL
+    {
+        string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings[DataBaseHelper.ConnectionString].ConnectionString;
+        string MarkconnectionString = System.Configuration.ConfigurationManager.ConnectionStrings[DataBaseHelper.ResultConnectionString].ConnectionString;
+
+        string intOutput;
+        public string AddBasicInformation(CAF objCAF)
+        {
+            try
+            {
+                var queryParameters = new DynamicParameters();
+                queryParameters.Add("@Action", objCAF.Action);
+                queryParameters.Add("@UserID", objCAF.UserID);
+                queryParameters.Add("@ApplicantID", objCAF.ApplicantID);
+
+                queryParameters.Add("@MatricBoardID", objCAF.MatricBoardID);
+                queryParameters.Add("@MatricYearOfPassing", objCAF.MatricYearOfPassing);
+                queryParameters.Add("@MatricExamType", objCAF.MatricExamType);
+                queryParameters.Add("@MatricRollNo", objCAF.MatricRollNo);
+
+                queryParameters.Add("@ApplicantName", objCAF.ApplicantName);
+                queryParameters.Add("@MotherName", objCAF.MotherName);
+                queryParameters.Add("@FatherName", objCAF.FatherName);
+
+                queryParameters.Add("@BloodGroupID", objCAF.BloodGroupID);
+                queryParameters.Add("@GenderID", objCAF.GenderID);
+                queryParameters.Add("@ReligionID", objCAF.ReligionID);
+                queryParameters.Add("@DOB", objCAF.DOB);
+                queryParameters.Add("@IDType", objCAF.IDType);
+                queryParameters.Add("@IDNumber", objCAF.IDNumber);
+                queryParameters.Add("@Domicile", objCAF.Domicile);
+
+                queryParameters.Add("@StateID", objCAF.StateID);
+                queryParameters.Add("@DistID", objCAF.DistID);
+                queryParameters.Add("@BlockID", objCAF.BlockID);
+                queryParameters.Add("@Address", objCAF.Address);
+                queryParameters.Add("@Pincode", objCAF.Pincode);
+                queryParameters.Add("@MobileNo", objCAF.MobileNo);
+                queryParameters.Add("@whatsappNo", objCAF.whatsappNo);//added by biswajit on date-5 / 19 / 22
+                queryParameters.Add("@AlternateNo", objCAF.AlternateNo);
+                queryParameters.Add("@Email", objCAF.Email);
+                queryParameters.Add("@whatsappNo", objCAF.whatsappNo);//added by biswajit on date-5 / 19 / 22
+
+                //queryParameters.Add("@Distinction", objCAF.Distinction);
+                //queryParameters.Add("@CoreID", objCAF.CoreID);
+                //queryParameters.Add("@FirstElectiveID", objCAF.Elective1ID);
+                //queryParameters.Add("@SecondElectiveID", objCAF.Elective2ID);
+                //queryParameters.Add("@FirstPreferID", objCAF.FirstPreferID);
+                //queryParameters.Add("@SecondPreferID", objCAF.SecondPreferID);
+                //queryParameters.Add("@ThirdPreferID", objCAF.ThirdPreferID);
+                //queryParameters.Add("@ImageStatus", objCAF.ImageStatus);
+                queryParameters.Add("@SubmitStatus", objCAF.SubmitStatus);
+                queryParameters.Add("@PaymentStatus", objCAF.PaymentStatus);
+                //queryParameters.Add("@PaymentAmount", objCAF.PaymentAmount);
+                queryParameters.Add("@CreatedBy", objCAF.CreatedBy);
+                //queryParameters.Add("@XMLSubject", objCAF.SubjectXML);
+                //queryParameters.Add("@XMLQualification", objCAF.QualificationXML);
+                queryParameters.Add("@OutMsg", dbType: DbType.String, direction: ParameterDirection.Output, size: 100);
+                using (IDbConnection db = new SqlConnection(connectionString))
+                {
+                    db.Query<string>("USP_ADDCAFDATA", queryParameters, commandType: CommandType.StoredProcedure).ToString();
+                }
+                intOutput = queryParameters.Get<string>("@OutMsg");
+                return intOutput;
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception(ex.Message.ToString());
+            }
+        }
+
+        public string UpdateApplicantDetailsForErrorMarkCorrection(CAF objCAF)
+        {
+            try
+            {
+                var queryParameters = new DynamicParameters();
+                queryParameters.Add("@Action", objCAF.Action);
+                queryParameters.Add("@ApplicantID", objCAF.ApplicantID);
+                queryParameters.Add("@XMLQualification", objCAF.QualificationXML);
+                queryParameters.Add("@CreatedBy", objCAF.CreatedBy);
+                queryParameters.Add("@Distinction", objCAF.Distinction);
+                queryParameters.Add("@OutMsg", dbType: DbType.String, direction: ParameterDirection.Output, size: 100);
+                using (IDbConnection db = new SqlConnection(connectionString))
+                {
+                    db.Query<string>("USP_UpdateApplicantDetails_ForErrorMarkCorrection", queryParameters, commandType: CommandType.StoredProcedure).ToString();
+                }
+                intOutput = queryParameters.Get<string>("@OutMsg");
+                return intOutput;
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception(ex.Message.ToString());
+            }
+        }
+
+        public DataSet ViewApplicantDetailsForErrorMarkCorrection(CAF objCAF)
+        {
+            SqlConnection sqlConnection = new SqlConnection(connectionString);
+            DataSet dataSet = new DataSet();
+            SqlDataAdapter sqlDataAdapter = new SqlDataAdapter();
+            SqlCommand sqlCommand = new SqlCommand();
+            sqlCommand.CommandText = "USP_UpdateApplicantDetails_ForErrorMarkCorrection";
+            sqlCommand.CommandType = CommandType.StoredProcedure;
+            sqlCommand.Parameters.AddWithValue("@Action", objCAF.Action);
+            sqlCommand.Parameters.AddWithValue("@ApplicantID", objCAF.ApplicantID);
+            sqlCommand.Connection = sqlConnection;
+            sqlDataAdapter.SelectCommand = sqlCommand;
+            sqlConnection.Open();
+            sqlDataAdapter.Fill(dataSet);
+            sqlConnection.Close();
+            return dataSet;
+        }
+        public string AddAdditionalDetails(CAF objCAF)
+        {
+            try
+            {
+                var queryParameters = new DynamicParameters();
+                queryParameters.Add("@Action", objCAF.Action);
+                queryParameters.Add("@UserID", objCAF.UserID);
+                queryParameters.Add("@ApplicantID", objCAF.ApplicantID);
+                queryParameters.Add("@AdditionalDetailsID ", objCAF.AdditionalDetailsID);
+                queryParameters.Add("@CategoryID", objCAF.CategoryID);
+                queryParameters.Add("@PWD", objCAF.PH);
+                queryParameters.Add("@SubCategoryID", objCAF.SubCategoryID);
+
+                //queryParameters.Add("@NCCA", objCAF.NCCA);
+                queryParameters.Add("@NCCB", objCAF.NCCB);
+                queryParameters.Add("@NCCC", objCAF.NCCC);
+                queryParameters.Add("@NSSUC", objCAF.NSSUC);
+                queryParameters.Add("@NSSSC", objCAF.NSSSC);
+                queryParameters.Add("@NSSNL", objCAF.NSSNL);
+                queryParameters.Add("@NSSIL", objCAF.NSSIL);
+                queryParameters.Add("@RRRP", objCAF.RRRP);
+                queryParameters.Add("@RRPR", objCAF.RRPR);
+                queryParameters.Add("@SGSL", objCAF.SGSL);
+                queryParameters.Add("@SGNL", objCAF.SGNL);
+                queryParameters.Add("@SGIL", objCAF.SGIL);
+                queryParameters.Add("@SGIU", objCAF.SGIU);
+
+                queryParameters.Add("@intDisabilityPercentage", objCAF.intDisabilityPercentage);
+                queryParameters.Add("@intPWDType", objCAF.intPWDType);
+                queryParameters.Add("@Blind", objCAF.Blind);
+                queryParameters.Add("@Hearing", objCAF.Hearing);
+                queryParameters.Add("@Palsy", objCAF.Palsy);
+                queryParameters.Add("@Leprosy", objCAF.Leprosy);
+                queryParameters.Add("@Dwarf", objCAF.Dwarf);
+                queryParameters.Add("@Acid", objCAF.Acid);
+                queryParameters.Add("@Muscular", objCAF.Muscular);
+                queryParameters.Add("@Autism", objCAF.Autism);
+                queryParameters.Add("@Intellect", objCAF.Intellect);
+                queryParameters.Add("@Learning", objCAF.Learning);
+                queryParameters.Add("@Mental", objCAF.Mental);
+                queryParameters.Add("@vchUdidNo", objCAF.vchUdidNo);
+
+                queryParameters.Add("@CreatedBy", objCAF.CreatedBy);
+                queryParameters.Add("@OutMsg", dbType: DbType.String, direction: ParameterDirection.Output, size: 100);
+                using (IDbConnection db = new SqlConnection(connectionString))
+                {
+                    db.Query<string>("USP_ADDCAFDATA", queryParameters, commandType: CommandType.StoredProcedure).ToString();
+                }
+                intOutput = queryParameters.Get<string>("@OutMsg");
+                return intOutput;
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception(ex.Message.ToString());
+            }
+        }
+
+        public string AddQualificationDetails(CAF objCAF)
+        {
+            try
+            {
+                var queryParameters = new DynamicParameters();
+                queryParameters.Add("@Action", objCAF.Action);
+                queryParameters.Add("@ApplicantID", objCAF.ApplicantID);
+                queryParameters.Add("@XMLQualification", objCAF.QualificationXML);
+                queryParameters.Add("@ExamType", objCAF.ExamType);
+                queryParameters.Add("@Distinction", objCAF.Distinction);
+                queryParameters.Add("@CoreID", objCAF.CoreID);
+                queryParameters.Add("@FirstElectiveID", objCAF.Elective1ID);
+                queryParameters.Add("@SecondElectiveID", objCAF.Elective2ID);
+                queryParameters.Add("@PassedGraduationWith", objCAF.PassedGraduationWith);
+                queryParameters.Add("@CoreCreditID", objCAF.CoreCreditID);
+                queryParameters.Add("@FirstElectiveCreditID", objCAF.FirstElectiveCreditID);
+                queryParameters.Add("@SecondElectiveCreditID", objCAF.SecondElectiveCreditID);
+                queryParameters.Add("@XMLSubject", objCAF.SubjectXML);
+                queryParameters.Add("@FirstPreferID", objCAF.FirstPreferID);
+                queryParameters.Add("@SecondPreferID", objCAF.SecondPreferID);
+                queryParameters.Add("@ThirdPreferID", objCAF.ThirdPreferID);
+                queryParameters.Add("@CreatedBy", objCAF.CreatedBy);
+                queryParameters.Add("@OutMsg", dbType: DbType.String, direction: ParameterDirection.Output, size: 100);
+                using (IDbConnection db = new SqlConnection(connectionString))
+                {
+                    db.Query<string>("USP_ADDCAFDATA", queryParameters, commandType: CommandType.StoredProcedure).ToString();
+                }
+                intOutput = queryParameters.Get<string>("@OutMsg");
+                return intOutput;
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception(ex.Message.ToString());
+            }
+        }
+
+        public string AddSPOTQualificationDetails(CAF objCAF)
+        {
+            try
+            {
+                var queryParameters = new DynamicParameters();
+                queryParameters.Add("@Action", objCAF.Action);
+                queryParameters.Add("@ApplicantID", objCAF.ApplicantID);
+
+                queryParameters.Add("@ExamType", objCAF.ExamType);
+                queryParameters.Add("@Distinction", objCAF.Distinction);
+                queryParameters.Add("@GraduationMarkTypeID", objCAF.MarkTypeID);
+                queryParameters.Add("@GraduationBoardID", objCAF.GraduationBoardID);
+                queryParameters.Add("@YearOfPassing", objCAF.GraduationYearOfPassing);
+                queryParameters.Add("@RollNo", objCAF.GraduationRollNo);
+                queryParameters.Add("@MaxMark", objCAF.MaxMark);
+                queryParameters.Add("@ObtainedMark", objCAF.ObtainedMark);
+                queryParameters.Add("@CGPA", objCAF.CGPA);
+                queryParameters.Add("@Percentage", objCAF.Percentage);
+                queryParameters.Add("@UpdatedBy", objCAF.CreatedBy);
+
+                queryParameters.Add("@XMLSubject", objCAF.SubjectXML);
+                queryParameters.Add("@OutMsg", dbType: DbType.String, direction: ParameterDirection.Output, size: 100);
+                using (IDbConnection db = new SqlConnection(connectionString))
+                {
+                    db.Query<string>("USP_ADDSPOTCAFDATA", queryParameters, commandType: CommandType.StoredProcedure).ToString();
+                }
+                intOutput = queryParameters.Get<string>("@OutMsg");
+                return intOutput;
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception(ex.Message.ToString());
+            }
+        }
+
+        public string AddPhoto(CAF objCAF)
+        {
+            try
+            {
+                var queryParameters = new DynamicParameters();
+                queryParameters.Add("@Action", objCAF.Action);
+                queryParameters.Add("@ApplicantID", objCAF.ApplicantID);
+                queryParameters.Add("@ImageStatus", objCAF.ImageStatus);
+                queryParameters.Add("@OutMsg", dbType: DbType.String, direction: ParameterDirection.Output, size: 100);
+                using (IDbConnection db = new SqlConnection(connectionString))
+                {
+                    db.Query<string>("USP_ADDCAFDATA", queryParameters, commandType: CommandType.StoredProcedure).ToString();
+                }
+                intOutput = queryParameters.Get<string>("@OutMsg");
+                return intOutput;
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception(ex.Message.ToString());
+            }
+        }
+        public List<CAF> ViewCAFData(CAF objCAF)
+        {
+            try
+            {
+                var queryParameters = new DynamicParameters();
+                queryParameters.Add("@ACTION", objCAF.Action);
+                queryParameters.Add("@ApplicantID", objCAF.ApplicantID);
+                queryParameters.Add("@USERID", objCAF.UserID);
+                queryParameters.Add("@RMobileNo", objCAF.RMobileNo);
+                queryParameters.Add("@CoreSubjectId", objCAF.CoreID);
+                queryParameters.Add("@FirstElectiveID", objCAF.Elective1ID);
+                queryParameters.Add("@SecondElectiveID", objCAF.Elective2ID);
+                using (IDbConnection db = new SqlConnection(connectionString))
+                {
+                    return db.Query<CAF>("USP_VIEWCAFDATA", queryParameters, commandType: CommandType.StoredProcedure).ToList();
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception(ex.Message.ToString());
+            }
+        }
+        public List<CAF> ViewSpotCAFData(CAF objCAF)
+        {
+            try
+            {
+                var queryParameters = new DynamicParameters();
+                queryParameters.Add("@ACTION", objCAF.Action);
+                queryParameters.Add("@ApplicantID", objCAF.ApplicantID);
+                queryParameters.Add("@USERID", objCAF.UserID);
+                using (IDbConnection db = new SqlConnection(connectionString))
+                {
+                    return db.Query<CAF>("USP_VIEWSPOTCAFDATA", queryParameters, commandType: CommandType.StoredProcedure).ToList();
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception(ex.Message.ToString());
+            }
+        }
+        public List<CAF> BSEBoardDetails(CAF objCAF)
+        {
+            try
+            {
+                var queryParameters = new DynamicParameters();
+                queryParameters.Add("@Action", objCAF.Action);
+                queryParameters.Add("@RollNo", objCAF.MatricRollNo);
+                queryParameters.Add("@Year", objCAF.MatricYearOfPassing);
+                queryParameters.Add("@Streamid", objCAF.StreamName);
+                using (IDbConnection db = new SqlConnection(connectionString))
+                {
+                    return db.Query<CAF>("USP_BSERESULT", queryParameters, commandType: CommandType.StoredProcedure).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public string EditQualificationDetails(CAF objCAF)
+        {
+            try
+            {
+                var queryParameters = new DynamicParameters();
+                queryParameters.Add("@Action", objCAF.Action);
+                queryParameters.Add("@ApplicantID", objCAF.ApplicantID);
+                queryParameters.Add("@ExamType", objCAF.ExamType);
+                queryParameters.Add("@Distinction", objCAF.Distinction);
+                queryParameters.Add("@GraduationMarkTypeID", objCAF.MarkTypeID);
+                queryParameters.Add("@GraduationBoardID", objCAF.GraduationBoardID);
+                queryParameters.Add("@YearOfPassing", objCAF.GraduationYearOfPassing);
+                queryParameters.Add("@RollNo", objCAF.GraduationRollNo);
+                queryParameters.Add("@MaxMark", objCAF.MaxMark);
+                queryParameters.Add("@ObtainedMark", objCAF.ObtainedMark);
+                queryParameters.Add("@CGPA", objCAF.CGPA);
+                queryParameters.Add("@Percentage", objCAF.Percentage);
+                queryParameters.Add("@UpdatedBy", objCAF.CreatedBy);
+                queryParameters.Add("@OutMsg", dbType: DbType.String, direction: ParameterDirection.Output, size: 100);
+                using (IDbConnection db = new SqlConnection(connectionString))
+                {
+                    db.Query<string>("USP_EDITCAFDATA", queryParameters, commandType: CommandType.StoredProcedure).ToString();
+                }
+                intOutput = queryParameters.Get<string>("@OutMsg");
+                return intOutput;
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception(ex.Message.ToString());
+            }
+        }
+
+
+        public DataSet GetDetailsByApplicantNo(string strAction, string strAppNo)
+        {
+            SqlConnection sqlConnection = new SqlConnection(connectionString);
+            DataSet dataSet = new DataSet();
+            SqlDataAdapter sqlDataAdapter = new SqlDataAdapter();
+            SqlCommand sqlCommand = new SqlCommand();
+            sqlCommand.CommandText = "USP_PG_GetApplicantDetails_Portal";
+            sqlCommand.CommandType = CommandType.StoredProcedure;
+            sqlCommand.Parameters.AddWithValue("@p_VchAction", strAction);
+            sqlCommand.Parameters.AddWithValue("@p_VchUniquerefno", strAppNo);
+            sqlCommand.Connection = sqlConnection;
+            sqlDataAdapter.SelectCommand = sqlCommand;
+            sqlConnection.Open();
+            sqlDataAdapter.Fill(dataSet);
+            sqlConnection.Close();
+            return dataSet;
+        }
+
+
+        public string UpdateApplicantInfo_Portal(CAF objApplicant)
+        {
+            string strRetValue = string.Empty;
+            SqlConnection sqlConnection = new SqlConnection(connectionString);
+            SqlCommand sqlCommand = new SqlCommand();
+            try
+            {
+                sqlCommand.Connection = sqlConnection;
+                sqlCommand.CommandText = "USP_PG_UpdateApplicantData_Portal";
+                sqlCommand.CommandType = CommandType.StoredProcedure;
+
+                sqlCommand.Parameters.AddWithValue("@p_ApplicantID", objApplicant.ApplicantID);
+
+                sqlCommand.Parameters.AddWithValue("@p_ApplicantName", objApplicant.ApplicantName);
+                sqlCommand.Parameters.AddWithValue("@p_MotherName", objApplicant.MotherName);
+                sqlCommand.Parameters.AddWithValue("@p_FatherName", objApplicant.FatherName);
+                sqlCommand.Parameters.AddWithValue("@p_CategoryID", objApplicant.CategoryID);
+                sqlCommand.Parameters.AddWithValue("@p_PWD", objApplicant.PH);
+                sqlCommand.Parameters.AddWithValue("@p_SubCategoryID", objApplicant.SubCategoryID);
+                sqlCommand.Parameters.AddWithValue("@p_NCCA", objApplicant.NCCA);
+                sqlCommand.Parameters.AddWithValue("@p_NCCB", objApplicant.NCCB);
+                sqlCommand.Parameters.AddWithValue("@p_NCCC", objApplicant.NCCC);
+                sqlCommand.Parameters.AddWithValue("@p_NSSUC", objApplicant.NSSUC);
+                sqlCommand.Parameters.AddWithValue("@p_NSSSC", objApplicant.NSSSC);
+                sqlCommand.Parameters.AddWithValue("@p_NSSNL", objApplicant.NSSNL);
+                sqlCommand.Parameters.AddWithValue("@p_NSSIL", objApplicant.NSSIL);
+                sqlCommand.Parameters.AddWithValue("@p_RRRP", objApplicant.RRRP);
+                sqlCommand.Parameters.AddWithValue("@p_RRPR", objApplicant.RRPR);
+                sqlCommand.Parameters.AddWithValue("@p_SGSL", objApplicant.SGSL);
+                sqlCommand.Parameters.AddWithValue("@p_SGNL", objApplicant.SGNL);
+                sqlCommand.Parameters.AddWithValue("@p_SGIL", objApplicant.SGIL);
+                sqlCommand.Parameters.AddWithValue("@p_SGIU", objApplicant.SGIU);
+                sqlCommand.Parameters.AddWithValue("@p_QualificationXml", objApplicant.QualificationXML);
+                sqlCommand.Parameters.AddWithValue("@p_VchAction", objApplicant.Action);
+                sqlCommand.Parameters.AddWithValue("@p_IntCreatedBy", objApplicant.CreatedBy);
+                //added
+                sqlCommand.Parameters.AddWithValue("@p_Distinction", objApplicant.Distinction);
+                sqlCommand.Parameters.AddWithValue("@p_DOB", objApplicant.DOB);
+                sqlCommand.Parameters.AddWithValue("@p_Gender", objApplicant.GenderID);
+                sqlCommand.Parameters.AddWithValue("@p_RollNo", objApplicant.MatricRollNo);
+                sqlCommand.Parameters.AddWithValue("@p_University", objApplicant.MatricBoardID);
+                //added
+                SqlParameter sqlParameter = new SqlParameter("@p_Output", SqlDbType.VarChar, 10);
+                sqlParameter.Direction = ParameterDirection.Output;
+                sqlCommand.Parameters.Add(sqlParameter);
+                if (sqlConnection.State == ConnectionState.Closed)
+                {
+                    sqlConnection.Open();
+                }
+
+                sqlCommand.ExecuteNonQuery();
+                object obj = sqlParameter.Value;
+                if (obj != null && obj != DBNull.Value)
+                {
+                    strRetValue = obj.ToString();
+                }
+
+            }
+            catch (Exception ex)
+            {
+
+            }
+            finally
+            {
+                sqlConnection.Close();
+            }
+            return strRetValue;
+        }
+
+        public DataSet ViewApplicantDetailsForErrorCorrection( CAF objCAF)
+        {
+            SqlConnection sqlConnection = new SqlConnection(connectionString);
+            DataSet dataSet = new DataSet();
+            SqlDataAdapter sqlDataAdapter = new SqlDataAdapter();
+            SqlCommand sqlCommand = new SqlCommand();
+            sqlCommand.CommandText = "USP_ViewApplicantDetails_ForErrorCorrection";
+            sqlCommand.CommandType = CommandType.StoredProcedure;
+            sqlCommand.Parameters.AddWithValue("@Action", objCAF.Action);
+            sqlCommand.Parameters.AddWithValue("@ApplicantID", objCAF.ApplicantID);
+            sqlCommand.Connection = sqlConnection;
+            sqlDataAdapter.SelectCommand = sqlCommand;
+            sqlConnection.Open();
+            sqlDataAdapter.Fill(dataSet);
+            sqlConnection.Close();
+            return dataSet;
+        }
+
+        public string UpdateApplicantDetailsForErrorCorrection(CAF objCAF)
+        {
+            try
+            {
+                var queryParameters = new DynamicParameters();
+                queryParameters.Add("@Action", objCAF.Action);
+                queryParameters.Add("@ApplicantID", objCAF.ApplicantID);
+                queryParameters.Add("@CategoryID", objCAF.CategoryID);
+                queryParameters.Add("@PWD", objCAF.PH);
+                queryParameters.Add("@SubCategoryID", objCAF.SubCategoryID);
+                queryParameters.Add("@NCCB", objCAF.NCCB);
+                queryParameters.Add("@NCCC", objCAF.NCCC);
+                queryParameters.Add("@NSSUC", objCAF.NSSUC);
+                queryParameters.Add("@NSSSC", objCAF.NSSSC);
+                queryParameters.Add("@NSSNL", objCAF.NSSNL);
+                queryParameters.Add("@NSSIL", objCAF.NSSIL);
+                queryParameters.Add("@RRRP", objCAF.RRRP);
+                queryParameters.Add("@RRPR", objCAF.RRPR);
+                queryParameters.Add("@SGSL", objCAF.SGSL);
+                queryParameters.Add("@SGNL", objCAF.SGNL);
+                queryParameters.Add("@SGIL", objCAF.SGIL);
+                queryParameters.Add("@SGIU", objCAF.SGIU);
+                queryParameters.Add("@XMLQualification", objCAF.QualificationXML);
+                queryParameters.Add("@CreatedBy", objCAF.CreatedBy);
+                queryParameters.Add("@Distinction", objCAF.Distinction);
+                queryParameters.Add("@OutMsg", dbType: DbType.String, direction: ParameterDirection.Output, size: 100);
+                using (IDbConnection db = new SqlConnection(connectionString))
+                {
+                    db.Query<string>("USP_UpdateApplicantDetails_ForErrorCorrection", queryParameters, commandType: CommandType.StoredProcedure).ToString();
+                }
+                intOutput = queryParameters.Get<string>("@OutMsg");
+                return intOutput;
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception(ex.Message.ToString());
+            }
+        }
+
+        public string UpdateCollegePreference(CAF objCAF)
+        {
+            try
+            {
+                var queryParameters = new DynamicParameters();
+                queryParameters.Add("@Action", objCAF.Action);
+                queryParameters.Add("@ApplicantID", objCAF.ApplicantID);
+                queryParameters.Add("@XMLSubject", objCAF.SubjectXML);
+                queryParameters.Add("@AccountNo", objCAF.AccountNo);
+                queryParameters.Add("@IFSCCode", objCAF.IFSCCode);
+                queryParameters.Add("@MICRCode", objCAF.MICRCode);
+                queryParameters.Add("@BankName", objCAF.BankName);
+                queryParameters.Add("@BranchName", objCAF.BranchName);
+                queryParameters.Add("@OutMsg", dbType: DbType.String, direction: ParameterDirection.Output, size: 100);
+                using (IDbConnection db = new SqlConnection(connectionString))
+                {
+                    db.Query<string>("USP_ADDCAFDATA", queryParameters, commandType: CommandType.StoredProcedure).ToString();
+                }
+                intOutput = queryParameters.Get<string>("@OutMsg");
+                return intOutput;
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception(ex.Message.ToString());
+            }
+        }
+
+    }
+}
