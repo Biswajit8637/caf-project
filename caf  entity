@@ -1,0 +1,225 @@
+using System;
+
+namespace SAMS_PG_Entity
+{
+    public class CAF
+    {
+        public string Action { get; set; }
+        public int ApplicantID { get; set; }
+        public int UserID { get; set; } 
+        public string ApplicationNo { get; set; }
+
+        public int MatricBoardID { get; set; }
+        public int MatricYearOfPassing { get; set; }
+        public int MatricExamType { get; set; }
+        public string MatricRollNo { get; set; }
+
+        public int PlusTwoBoardID { get; set; }
+        public int PlusTwoYearOfPassing { get; set; }
+        public int PlusTwoExamType { get; set; }
+        public string PlusTwoRollNo { get; set; }
+        public int GraduationBoardID { get; set; }
+        public int GraduationYearOfPassing { get; set; }
+        public int GraduationExamType { get; set; }
+        public string GraduationRollNo { get; set; }
+        public string ApplicantName { get; set; }
+
+        public string MotherName { get; set; }
+
+        public string FatherName { get; set; }
+        public int BloodGroupID { get; set; }
+        public int GenderID { get; set; }
+        public int ReligionID { get; set; }
+
+        public string DOB { get; set; }
+
+        public int IDType { get; set; }
+        public string IDNumber { get; set; }
+        public int Domicile { get; set; }
+        public string Email { get; set; }
+
+        public string MobileNo { get; set; }
+        public string whatsappNo { get; set; }
+        public string AlternateNo { get; set; }
+
+        public string ImageName { get; set; }
+        public bool ImageStatus { get; set; }
+        public string Address { get; set; }
+        public int StateID { get; set; }
+
+        public int DistID { get; set; }
+
+        public int BlockID { get; set; }
+
+        public string Pincode { get; set; }
+
+        public int CategoryID { get; set; }
+        public bool PH { get; set; }
+        public int SubCategoryID { get; set; }
+        public bool NCCA { get; set; }
+        public bool NCCB { get; set; }
+
+        public bool NCCC { get; set; }
+
+        public bool NSSUC { get; set; }
+
+        public bool NSSSC { get; set; }
+
+        public bool NSSNL { get; set; }
+
+        public bool NSSIL { get; set; }
+
+        public bool RRRP { get; set; }
+
+        public bool RRPR { get; set; }
+
+        public bool SGIS { get; set; }
+        public bool SGNL { get; set; }
+        public bool SGSL { get; set; }
+
+        public bool SGIL { get; set; }
+        public bool SGIU { get; set; }
+
+        public int ExamType { get; set; }
+        public int Distinction { get; set; }
+        public int FirstPreferID { get; set; }
+
+        public int SecondPreferID { get; set; }
+
+        public int ThirdPreferID { get; set; }
+
+        public int SubmitStatus { get; set; }
+
+        public string RegisteredMobileNo { get; set; }
+
+        public int PaymentStatus { get; set; }
+        public int EditStatus { get; set; }
+
+        public decimal PaymentAmount { get; set; }
+
+        public int UpdateStatus { get; set; }
+
+        public int ExamCourseID { get; set; }
+
+        public int CreatedBy { get; set; }
+        public string ElectiveXML { get; set; }
+        public string SubjectXML { get; set; }
+        public string QualificationXML { get; set; }
+
+        //*********************************  EducationInfo *********************************
+        public int ExamID { get; set; }
+        public int StreamID { get; set; }
+        public int MarkTypeID { get; set; }
+        public int BoardTypeID { get; set; }
+
+        public int BoardID { get; set; }
+
+        public int YearOfPassing { get; set; }
+
+        public string RollNo { get; set; }
+        public int MaxMark { get; set; }
+         
+        public int ObtainedMark { get; set; }
+
+        public decimal CGPA { get; set; }
+
+        public int Grade { get; set; }
+        public decimal Percentage { get; set; }
+
+        public int UpdatedBy { get; set; }
+
+        //*********************************  Entrance Subject *********************************
+        public int PGSubjectID { get; set; }
+        public string PGSubjectName { get; set; }
+        public int CollegePreferenceID { get; set; }
+        public string CollegeName { get; set; }
+        public int CoreID { get; set; }
+        public string CoreSubject { get; set; }
+        public int Elective1ID { get; set; }
+        public string Elective1 { get; set; }
+        public int Elective2ID { get; set; }
+        public string Elective2 { get; set; }
+        public int PassedGraduationWith { get; set; }
+        public string PassedGraduationWithName { get; set; }
+        public int CoreCreditID { get; set; }
+        public int FirstElectiveCreditID { get; set; }
+        public int SecondElectiveCreditID { get; set; }
+        public string CoreCreditName { get; set; }
+        public string FirstElectiveCreditName { get; set; }
+        public string SecondElectiveCreditName { get; set; }
+        public string Elective3 { get; set; }
+        public int PlustwoStudiedID { get; set; }
+        public string PlustwoStudied { get; set; }
+        public string CoreText { get; set; }
+        public string Elective1Text { get; set; }
+        public string Elective2Text { get; set; }
+        //*********************************  CAF Confirm *********************************
+        public string BloodGroupName { get; set; }
+        public string GenderName { get; set; }
+        public string ReligionName { get; set; }
+        public string TypeName { get; set; }
+        public string DomicileName { get; set; }
+        public string StateName { get; set; }
+        public string DistrictName { get; set; }
+        public string BlockName { get; set; }
+        public string PWD { get; set; }
+        public string SocialCategoryName { get; set; }
+        public string ReserveCategoryName { get; set; }
+        public string NCCAName { get; set; }
+        public string NCCBName { get; set; }
+        public string NCCCName { get; set; }
+        public string NSSUCName { get; set; }
+        public string NSSSCName { get; set; }
+        public string NSSNLName { get; set; }
+        public string NSSILName { get; set; }
+        public string RPName { get; set; }
+        public string PRName { get; set; }
+        public string SGISName { get; set; }
+        public string SGNLName { get; set; }
+        public string SGILName { get; set; }
+        public string ExamName { get; set; }
+        public string StreamName { get; set; }
+        public string MarkType { get; set; }
+        public string BoardName { get; set; }
+        public string DistinctionName { get; set; }
+        public string ExamCenterName1 { get; set; }
+        public string ExamCenterName2 { get; set; }
+        public string ExamCenterName3 { get; set; }
+        public int AdditionalDetailsID { get; set; }
+        public string GraduationExam { get; set; }
+
+        public string PayMode { get; set; }
+        public string Status { get; set; }
+        public decimal Amount { get; set; }
+        public string BankRefNo { get; set; }
+        public string CreatedDate { get; set; }
+        public string RMobileNo { get; set; }
+        public int RCollegeID { get; set; }
+        public string RcollegeName { get; set; }
+
+        //added by Devee on 05-08-2021 for Bank Details
+        public string AccountNo { get; set; }
+        public string IFSCCode { get; set; }
+        public string MICRCode { get; set; }
+        public string BankName { get; set; }
+        public string BranchName { get; set; }
+        //added by Devee on 13-06-2022 for PWD
+        public int intDisabilityPercentage { get; set; }
+        public int intPWDType { get; set; }
+        public bool Blind { get; set; }
+        public bool Hearing { get; set; }
+        public bool Palsy { get; set; }
+        public bool Leprosy { get; set; }
+        public bool Dwarf { get; set; }
+        public bool Acid { get; set; }
+        public bool Muscular { get; set; }
+        public bool Autism { get; set; }
+        public bool Intellect { get; set; }
+        public bool Learning { get; set; }
+        public bool Mental { get; set; }
+        public string PWDName { get; set; }
+        public string PWDTypeName { get; set; }
+        public string vchUdidNo { get; set; }
+    }
+
+}
