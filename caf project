@@ -1,0 +1,3278 @@
+using SAMSPGService;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using System.ServiceModel;
+using System.Text;
+using System.Web;
+using System.Web.Services;
+using System.Web.UI;
+using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
+using System.Xml.Linq;
+
+public partial class ManageStudent_TabCaf : System.Web.UI.Page
+{
+    SAMSPGBusinessClient objClient = null;
+    //static string AdmSession = ConfigurationManager.AppSettings["OpenAdmSession"].ToString();
+    static string Xpath = ConfigurationManager.AppSettings["Xpath"].ToString();
+    string key = "S#a!m(S&_)7A!pPG";
+
+    public static string btncheck = "0";
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        try
+        {
+            ActionTrack objTrack = new ActionTrack();
+            objTrack.WriteEventLog("Page_Load event of PG Common Application Form");
+
+
+            if (GetActivation(15) == "1")//....13  CAF activation code....15 CAF close code.
+            {
+                hdnUserID.Value = Convert.ToString(Session["StudentUserId"]);
+                if (Session["StudentUserId"] == null || Convert.ToInt32(hdnUserID.Value) != Convert.ToInt32(Session["StudentUserId"]))
+                {
+                    Response.Redirect("../SessionOut.aspx?log=1");
+                }
+                else
+                {
+                    if (ViewState["btnchck"] != null)
+                    {
+                        if (btncheck == "1")// button for basic infomation on 19/06/2022 by avisek
+                        {
+                            txtDOB.Text = Request.Form[txtDOB.UniqueID];
+                            // ddlGraduationStream.SelectedValue = Request.Form[ddlGraduationStream.UniqueID];
+                            txt10thPercentage.Attributes.Add("ReadOnly", "ReadOnly");
+                            txtPlusTwoPercentage.Attributes.Add("ReadOnly", "ReadOnly");
+                            txtGraduationPercentage.Attributes.Add("ReadOnly", "ReadOnly");
+                            divBasicInformation.Visible = true;
+                            liBasicInformation.Attributes["class"] = "active";
+                            divAdditionalDetails.Visible = false;
+                            divEducationalQualification.Visible = false;
+                            divImageUpload.Visible = false;
+                            txtMobNo.Text = Convert.ToString(Session["MobNumber"]);
+                            txtMobNo.Enabled = false;
+
+
+                        }
+                        else if (btncheck == "2") // button for Education infomation on 19/06/2022 by avisek
+                        {
+                            divEducationalQualification.Visible = true;
+                            liEducationalQualification.Attributes["class"] = "active";
+                            divBasicInformation.Visible = false;
+                            liBasicInformation.Attributes.Remove("class");
+                            divAdditionalDetails.Visible = false;
+                            liAdditionalDetails.Attributes.Remove("class");
+                        }
+                        else if (btncheck == "3") // button for Impo infomation on 19/06/2022 by avisek
+                        {
+                            divImageUpload.Visible = true;
+                            liImageUpload.Attributes["class"] = "active";
+                            divBasicInformation.Visible = false;
+                            liBasicInformation.Attributes.Remove("class");
+                            divAdditionalDetails.Visible = false;
+                            liAdditionalDetails.Attributes.Remove("class");
+                            divEducationalQualification.Visible = false;
+                            liEducationalQualification.Attributes.Remove("class");
+                        }
+                        else
+                        {
+
+                            txtDOB.Text = Request.Form[txtDOB.UniqueID];
+                            // ddlGraduationStream.SelectedValue = Request.Form[ddlGraduationStream.UniqueID];
+                            txt10thPercentage.Attributes.Add("ReadOnly", "ReadOnly");
+                            txtPlusTwoPercentage.Attributes.Add("ReadOnly", "ReadOnly");
+                            txtGraduationPercentage.Attributes.Add("ReadOnly", "ReadOnly");
+                            divBasicInformation.Visible = true;
+                            liBasicInformation.Attributes["class"] = "active";
+                            divAdditionalDetails.Visible = false;
+                            divEducationalQualification.Visible = false;
+                            divImageUpload.Visible = false;
+                            txtMobNo.Text = Convert.ToString(Session["MobNumber"]);
+                            txtMobNo.Enabled = false;
+                        }
+                    }
+                    else
+                    {
+                        txtDOB.Text = Request.Form[txtDOB.UniqueID];
+                        // ddlGraduationStream.SelectedValue = Request.Form[ddlGraduationStream.UniqueID];
+                        txt10thPercentage.Attributes.Add("ReadOnly", "ReadOnly");
+                        txtPlusTwoPercentage.Attributes.Add("ReadOnly", "ReadOnly");
+                        txtGraduationPercentage.Attributes.Add("ReadOnly", "ReadOnly");
+                        divBasicInformation.Visible = true;
+                        liBasicInformation.Attributes["class"] = "active";
+                        divAdditionalDetails.Visible = false;
+                        divEducationalQualification.Visible = false;
+                        divImageUpload.Visible = false;
+                        txtMobNo.Text = Convert.ToString(Session["MobNumber"]);
+                        txtMobNo.Enabled = false;
+                    }
+                    if (!Page.IsPostBack)
+                    {
+                        //if (DateTime.Now > DateTime.Parse("20-JUL-2021 11:45:00 PM") &&  Convert.ToString(Session["MobNumber"])!= "8117856575")
+                        //{
+                        //    Response.Redirect("ApplicationFormClosed.html",false);
+                        //}
+                        //else
+                        //{
+                        txtEMail.Text = Session["EmailID"].ToString();
+                        txtEMail.Enabled = false;
+
+                        FillBoard(1, ddlBoard);
+                        FillBoard(1, ddl10thBoard);
+                        FillBoard(2, ddlPlusTwoBoard);
+                        FillBoard(3, ddlGraduationBoard);
+                        BindYop(ddlYOP);
+                        BindYop(ddl10thYOP);
+                        // BindYop(ddlPlusTwoYOP);
+                        //BindYop(ddlGraduationYOP);
+                        FillState();
+                        FillState2();
+                        FillStream();
+                        //  FillUniversity(ddlFirstPrefernce);
+                        // FillUniversity(ddlSecondPrefernce);
+                        // FillUniversity(ddlThirdPrefernce);
+                        // FillCollege();
+                        ViewBasicInformation(Convert.ToInt32(Session["StudentUserId"]));
+
+
+                        //Session["TokenBasicInfo"] = day + month + year + hour + min + sec;
+                        //Session["TokenAditionalInfo"] = day + month + year + hour + min + sec;
+                        //Session["TokenEducationalInfo"] = day + month + year + hour + min + sec;
+                        //Session["TokenPhotoInfo"] = day + month + year + hour + min + sec;
+                        // }
+                    }
+                }
+            }
+            else
+            {
+                Response.Redirect("Cafclose.html", false);
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "PageLoad");
+        }
+    }
+    protected void FillBoard(int BoardTypeID, DropDownList ddlBoard)
+    {
+        try
+        {
+            DataSet dsBoard = new DataSet();
+
+            if (BoardTypeID == 1)
+            {
+                dsBoard.ReadXml(Xpath + "/M_Board.xml");
+                ddlBoard.DataSource = dsBoard;
+                ddlBoard.DataTextField = "BoardName";
+                ddlBoard.DataValueField = "BoardID";
+                ddlBoard.DataBind();
+            }
+            else if (BoardTypeID == 2)
+            {
+                dsBoard.ReadXml(Xpath + "/M_COUNCIL.xml");
+                var result = dsBoard.Tables[0].AsEnumerable().OrderBy(O => O.Field<string>("cid") == "0" ? "AA" + O.Field<string>("Cname") : O.Field<string>("Cname")).ToList().CopyToDataTable();
+                ddlBoard.DataSource = result;
+                ddlBoard.DataTextField = "Cname";
+                ddlBoard.DataValueField = "cid";
+                ddlBoard.DataBind();
+            }
+            else if (BoardTypeID == 3)
+            {
+                dsBoard.ReadXml(Xpath + "/M_GraduationBoard.xml");
+                var result = dsBoard.Tables[0].AsEnumerable().OrderBy(O => O.Field<string>("int_BoardID") == "0" ? "AA" + O.Field<string>("vch_BoardName") : O.Field<string>("vch_BoardName")).ToList().CopyToDataTable();
+
+                ddlBoard.DataSource = result;
+                ddlBoard.DataTextField = "vch_BoardName";
+                ddlBoard.DataValueField = "int_BoardID";
+                ddlBoard.DataBind();
+            }
+            else if (BoardTypeID == 4)
+            {
+                dsBoard.ReadXml(Xpath + "/M_GraduationBoard.xml");
+                ddlBoard.DataSource = dsBoard;
+                ddlBoard.DataTextField = "vch_BoardName";
+                ddlBoard.DataValueField = "int_BoardID";
+                ddlBoard.DataBind();
+            }
+        }
+        catch (FaultException ex)
+        {
+            throw new Exception(ex.Message + "FillBoard");
+        }
+    }
+    protected void BindYop(DropDownList ddlYop)
+    {
+        try
+        {
+            ddlYop.Items.Clear();
+            for (int i = 0; i < 59; i++)
+            {
+                int year = (Convert.ToInt32(DateTime.Now.Year.ToString()) - 5) - i;
+                //int year = Convert.ToInt32(DateTime.Now.Year.ToString()) - i;
+                ddlYop.Items.Add(new ListItem(Convert.ToString(year), Convert.ToString(year)));
+            }
+            ddlYop.Items.Insert(0, new ListItem("--SELECT--", "0"));
+            string a = ddl10thYOP.SelectedValue;
+        }
+        catch (FaultException ex)
+        {
+            throw new Exception(ex.Message + "BindYop");
+        }
+    }
+    protected void BindPlusTwoYOP(int MatricYOP)
+    {
+        try
+        {
+            ddlPlusTwoYOP.Items.Clear();
+            DateTime now = DateTime.Today;
+            int CurrentYear = Convert.ToInt32(now.ToString("yyyy"));
+            for (int year = CurrentYear; year > MatricYOP; year--)
+            {
+                ddlPlusTwoYOP.Items.Add(new ListItem(Convert.ToString(year), Convert.ToString(year)));
+            }
+            ddlPlusTwoYOP.Items.Insert(0, new ListItem("--SELECT--", "0"));
+        }
+        catch (FaultException ex)
+        {
+            throw new Exception(ex.Message + "BindPlusTwoYOP");
+        }
+    }
+
+    [WebMethod()]
+    public static dynamic BindGraduationYOP(int PlusTwoYOP)
+    {
+        try
+        {
+            List<int> liYOP = new List<int>();
+            for (int i = 2022; i > PlusTwoYOP; i--)
+            {
+                liYOP.Add(i);
+
+            }
+            return liYOP;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "BindGraduationYOP");
+        }
+    }
+
+    public void GetGraduationYOP(int PlusTwoYOP, DropDownList ddlGYOP)
+    {
+        try
+        {
+            ddlGYOP.Items.Clear();
+            if (PlusTwoYOP != 0)
+            {
+                DateTime now = DateTime.Today;
+                int CurrentYear = Convert.ToInt32(now.ToString("yyyy"));
+                List<int> liYOP = new List<int>();
+                for (int i = CurrentYear; i > PlusTwoYOP; i--)
+                {
+                    liYOP.Add(i);
+
+                }
+                ddlGYOP.DataSource = liYOP;
+                ddlGYOP.DataBind();
+                ddlGYOP.Items.Insert(0, new ListItem { Text = "-SELECT-", Value = "0" });
+            }
+            else
+            {
+                ddlGYOP.DataSource = null;
+                ddlGYOP.DataBind();
+                ddlGYOP.Items.Insert(0, new ListItem { Text = "-SELECT-", Value = "0" });
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "GetGraduationYOP");
+        }
+    }
+    public void FillState()
+    {
+        try
+        {
+            DataSet objds = new DataSet();
+            objds.ReadXml(Xpath + "/M_STATE.xml");
+
+            DataView dvOptions = new DataView(objds.Tables[0]);
+            dvOptions.Sort = "StateName";
+
+            ddlState.DataSource = dvOptions;
+            ddlState.DataTextField = "StateName";
+            ddlState.DataValueField = "StateID";
+            ddlState.DataBind();
+            ddlState.Items.Insert(0, new ListItem("--SELECT--", "0"));
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "FillState");
+        }
+    }
+    public void FillState2()
+    {
+        try
+        {
+            DataSet objds = new DataSet();
+            objds.ReadXml(Xpath + "/M_STATE.xml");
+
+            DataView dvOptions = new DataView(objds.Tables[0]);
+            dvOptions.Sort = "StateName";
+
+            ddlDomicile.DataSource = dvOptions;
+            ddlDomicile.DataTextField = "StateName";
+            ddlDomicile.DataValueField = "StateID";
+            ddlDomicile.DataBind();
+            ddlDomicile.Items.Insert(0, new ListItem("--SELECT--", "0"));
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "FillState2");
+        }
+    }
+    public void FillStream()
+    {
+        try
+        {
+            DataSet objds = new DataSet();
+            objds.ReadXml(Xpath + "/M_PlusTwo_STREAM.xml");
+            ddlPlusTwoStream.DataSource = objds;
+            ddlPlusTwoStream.DataTextField = "StreamName";
+            ddlPlusTwoStream.DataValueField = "PlusTwoStreamID";
+            ddlPlusTwoStream.DataBind();
+            ddlPlusTwoStream.Items.Insert(0, new ListItem("--Select--", "0"));
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "FillStream");
+        }
+    }
+    public void FillUniversity(DropDownList ddlUniversity)
+    {
+        try
+        {
+            DataSet objds = new DataSet();
+            DataTable filter = new DataTable();
+            //var filter ;
+            objds.ReadXml(Xpath + "/M_PG_ExaminationCentre.xml");
+            string Gender = hdnGender.Value;
+            if (Gender == "2")
+            {
+                filter = objds.Tables[0].AsEnumerable().CopyToDataTable();
+            }
+            else
+            {
+                filter = objds.Tables[0].AsEnumerable().Where(x => x.Field<string>("ExamCentreID") != "7" && x.Field<string>("ExamCentreID") != "21"
+                && x.Field<string>("ExamCentreID") != "22").CopyToDataTable();
+            }
+            ddlUniversity.DataSource = filter;
+            ddlUniversity.DataTextField = "ExamCenterName";
+            ddlUniversity.DataValueField = "ExamCentreID";
+            ddlUniversity.DataBind();
+            ddlUniversity.Items.Insert(0, new ListItem("--Select--", "0"));
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "FillUniversity");
+        }
+    }
+
+    [WebMethod()]
+    public static dynamic FillDistrict(int StateID)
+    {
+        try
+        {
+            XDocument xdoc = default(XDocument);
+            xdoc = XDocument.Load(Xpath + "/M_DISTRICT.xml");
+            dynamic qry = new { };
+            qry = from p in xdoc.Descendants("NewDataSet").Elements("Table")
+                  where Convert.ToInt32(p.Element("StateID").Value) == StateID
+                  select new { DistrictID = p.Element("DistrictID").Value, DistrictName = p.Element("DistrictName").Value.ToString() };
+
+            return qry;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "FillDistrict");
+        }
+    }
+
+    [WebMethod()]
+    public static dynamic FillGraduationStream(int PlustwoStreamID)
+    {
+        try
+        {
+            XDocument xdoc = default(XDocument);
+            xdoc = XDocument.Load(Xpath + "/M_Graduation_STREAM.xml");
+            dynamic qry = new { };
+            qry = (from p in xdoc.Descendants("NewDataSet").Elements("Table")
+                   where Convert.ToInt32(p.Element("PlusTwoStreamID").Value) == PlustwoStreamID
+                   select new { GraduationStreamID = p.Element("GraduationStreamID").Value, GraduationStreamName = p.Element("GraduationStreamName").Value.ToString() })
+                  .GroupBy(x => x.GraduationStreamID)
+                                  .Select(x => x.FirstOrDefault()).OrderBy(o => (o.GraduationStreamID == "1" || o.GraduationStreamID == "2" || o.GraduationStreamID == "3") ? "A" + o.GraduationStreamName : o.GraduationStreamName)
+                                 .ToList();
+
+            return qry;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "FillGraduationStream");
+        }
+    }
+
+    [WebMethod()]
+    public static dynamic FillBlock(int DistID)
+    {
+        try
+        {
+            XDocument xdoc = default(XDocument);
+            xdoc = XDocument.Load(Xpath + "/M_BLOCK.xml");
+            var qry = (dynamic)null;
+            if (DistID != 31)
+            {
+                qry = from p in xdoc.Descendants("NewDataSet").Elements("Table")
+                      where Convert.ToInt32(p.Element("DistrictID").Value) == DistID
+                      select new { BlockID = p.Element("BlockID").Value, BlockName = p.Element("BlockName").Value.ToString() };
+            }
+            else
+            {
+                qry = new[] { new { BlockID = "419", BlockName = "OTHER" } };
+            }
+            return qry;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "FillBlock");
+        }
+    }
+
+    [WebMethod()]
+    public static dynamic fillBSEMark(string vchRollNo, int intYear)
+    {
+
+        string PAction = string.Empty;
+
+        if (intYear == 2017) { PAction = "E"; }
+        if (intYear == 2016) { PAction = "D"; }
+        if (intYear == 2015) { PAction = "B"; }
+        if (intYear == 2014) { PAction = "A"; }
+        if (intYear == 2013) { PAction = "C"; }
+
+        List<ApplicantInfo> objDCaf = new List<ApplicantInfo>();
+        try
+        {
+            using (SAMSPGBusinessClient client = new SAMSPGBusinessClient())
+            {
+                objDCaf = client.BSEBoardMark(new ApplicantInfo()
+                {
+                    Action = Convert.ToChar(PAction),
+                    MatricRollNo = vchRollNo
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "fillBSEMark");
+        }
+        return objDCaf;
+
+    }
+    [WebMethod()]
+    public static dynamic FillCHSEDetails(string RollNo, int Year, int Stream)
+    {
+        string PAction = string.Empty;
+        if (Year == 2019) { PAction = "G"; }
+        if (Year == 2018) { PAction = "F"; }
+        if (Year == 2017) { PAction = "E"; }
+        if (Year == 2016) { PAction = "D"; }
+        if (Year == 2015) { PAction = "C"; }
+        if (Year == 2014) { PAction = "B"; }
+        if (Year == 2013) { PAction = "A"; }
+        List<ApplicantInfo> objApplicant = new List<ApplicantInfo>();
+        try
+        {
+            using (SAMSPGBusinessClient client = new SAMSPGBusinessClient())
+            {
+                objApplicant = client.CHSEBoardMark(new ApplicantInfo()
+                {
+                    Action = Convert.ToChar(PAction),
+                    MatricRollNo = RollNo,
+                    StreamID = Stream
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "FillCHSEDetails");
+        }
+        return objApplicant;
+
+    }
+
+    [WebMethod()]
+    public static dynamic FillGraduationDetails(string RollNo, int Year, int Stream)
+    {
+        string PAction = string.Empty;
+        if (Year == 2020) { PAction = "D"; }
+        if (Year == 2019) { PAction = "C"; }
+        if (Year == 2018) { PAction = "B"; }
+        if (Year == 2017) { PAction = "A"; }
+        List<ApplicantInfo> objApplicant = new List<ApplicantInfo>();
+        try
+        {
+            using (SAMSPGBusinessClient client = new SAMSPGBusinessClient())
+            {
+                objApplicant = client.GraduationBoardMark(new ApplicantInfo()
+                {
+                    Action = Convert.ToChar(PAction),
+                    MatricRollNo = RollNo,
+                    StreamID = Stream
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "FillGraduationDetails");
+        }
+        return objApplicant;
+
+    }
+
+    [WebMethod()]
+    public static dynamic FillSubject(int StreamID)
+    {
+        try
+        {
+            XDocument xdoc = default(XDocument);
+            xdoc = XDocument.Load(Xpath + "/M_PG_Subject.xml");
+            dynamic qry = new { };
+            qry = (from p in xdoc.Descendants("NewDataSetSub").Elements("Table")
+                   where Convert.ToInt32(p.Element("Stream1").Value) == StreamID || Convert.ToInt32(p.Element("Stream2").Value) == StreamID
+                   || Convert.ToInt32(p.Element("Stream3").Value) == StreamID || Convert.ToInt32(p.Element("Stream4").Value) == StreamID
+                   || Convert.ToInt32(p.Element("Stream5").Value) == StreamID || Convert.ToInt32(p.Element("Stream6").Value) == StreamID
+                   || Convert.ToInt32(p.Element("Stream7").Value) == StreamID || Convert.ToInt32(p.Element("Stream8").Value) == StreamID
+                   select new { SubjectID = p.Element("CoreSubjectId").Value, SubjectName = p.Element("CoreSubject").Value.ToString() })
+                  .OrderBy(o => o.SubjectName)
+                              .ToList();
+
+            return qry;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "FillSubject");
+        }
+    }
+
+    [WebMethod()]
+    public static dynamic FillPGCourse(int HonsID, int Elective1ID, int Elective2ID, int streamvalID, int PlustwostreamvalID)
+    {
+        try
+        {
+            dynamic qry = new { };
+            if (PlustwostreamvalID != 2)
+            {
+                XDocument xdoc = default(XDocument);
+                xdoc = XDocument.Load(Xpath + "/M_PG_Course.xml");
+
+
+                qry = (from p in xdoc.Descendants("NewDataSetSub").Elements("Table")
+                       where ((Convert.ToInt32(p.Element("CoreSubjectID").Value) == HonsID || Convert.ToInt32(p.Element("CoreSubjectID").Value) == Elective1ID
+                       || Convert.ToInt32(p.Element("CoreSubjectID").Value) == Elective2ID || Convert.ToInt32(p.Element("CoreSubjectID").Value) == 43)
+                       && (Convert.ToInt32(p.Element("StreamID").Value) == 0 || Convert.ToInt32(p.Element("StreamID").Value) == streamvalID)
+                       && Convert.ToInt32(p.Element("PGCourseId").Value) != 85
+                       )
+                       select new { CourseID = p.Element("PGCourseId").Value, CourseName = p.Element("PGCourseName").Value.ToString() })
+                      .GroupBy(x => x.CourseID)
+                                   .Select(x => x.FirstOrDefault()).OrderBy(o => o.CourseName)
+                                  .ToList();
+            }
+            else
+            {
+                XDocument xdoc = default(XDocument);
+                xdoc = XDocument.Load(Xpath + "/M_PG_Course.xml");
+
+
+                qry = (from p in xdoc.Descendants("NewDataSetSub").Elements("Table")
+                       where ((Convert.ToInt32(p.Element("CoreSubjectID").Value) == HonsID || Convert.ToInt32(p.Element("CoreSubjectID").Value) == Elective1ID
+                       || Convert.ToInt32(p.Element("CoreSubjectID").Value) == Elective2ID || Convert.ToInt32(p.Element("CoreSubjectID").Value) == 43)
+                       && (Convert.ToInt32(p.Element("StreamID").Value) == 0 || Convert.ToInt32(p.Element("StreamID").Value) == streamvalID))
+                       select new { CourseID = p.Element("PGCourseId").Value, CourseName = p.Element("PGCourseName").Value.ToString() })
+                      .GroupBy(x => x.CourseID)
+                                   .Select(x => x.FirstOrDefault()).OrderBy(o => o.CourseName)
+                                  .ToList();
+            }
+
+            return qry;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "FillPGCourse");
+        }
+    }
+
+    [WebMethod()]
+    public static dynamic FillPGCourseWiseCollege(int PGCourseID, int CollegeType)
+    {
+        try
+        {
+            XDocument xdoc = default(XDocument);
+            xdoc = XDocument.Load(Xpath + "/M_PG_College.xml");
+            dynamic qry = new { };
+            if (CollegeType == 2)
+            {
+                qry = (from p in xdoc.Descendants("NewDataSetSub").Elements("Table")
+                       where Convert.ToInt32(p.Element("PGCourseID").Value) == PGCourseID
+                       select new { CollegeID = p.Element("CollegeID").Value, CollegeName = p.Element("CollegeName").Value.ToString() })
+                      .GroupBy(x => x.CollegeID)
+                                   .Select(x => x.FirstOrDefault()).OrderBy(o => o.CollegeName)
+                                  .ToList();
+            }
+            else
+            {
+                qry = (from p in xdoc.Descendants("NewDataSetSub").Elements("Table")
+                       where Convert.ToInt32(p.Element("PGCourseID").Value) == PGCourseID && Convert.ToInt32(p.Element("CollegeType").Value) == CollegeType
+                       select new { CollegeID = p.Element("CollegeID").Value, CollegeName = p.Element("CollegeName").Value.ToString() })
+                      .GroupBy(x => x.CollegeID)
+                                   .Select(x => x.FirstOrDefault()).OrderBy(o => o.CollegeName)
+                                  .ToList();
+            }
+
+            return qry;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "FillPGCourseWiseCollege");
+        }
+    }
+
+    protected void btnBasicInfoNext_Click(object sender, EventArgs e)
+    {
+        ActionTrack objTrack = new ActionTrack();
+        objTrack.WriteEventLog("Button_click event of PG Common Application Form");
+
+        if (Session["StudentUserId"] == null || Convert.ToInt32(hdnUserID.Value) != Convert.ToInt32(Session["StudentUserId"]))
+        {
+            Response.Redirect("../SessionOut.aspx?log=1");
+        }
+        else
+        {
+            if (ValidateServerSide() == true)
+            {
+                string ReturnMsg = "";
+                objClient = new SAMSPGBusinessClient();
+                CAF objCAF = new CAF();
+                try
+                {
+                    //****************** Basic Information ******************
+
+                    objCAF.Action = "A";
+                    objCAF.ApplicantID = Convert.ToInt32(hdnAppid.Value);
+                    objCAF.UserID = Convert.ToInt32(Session["StudentUserId"]);
+                    objCAF.MatricBoardID = Convert.ToInt32(ddlBoard.SelectedValue);
+                    objCAF.MatricYearOfPassing = Convert.ToInt32(ddlYOP.SelectedValue);
+                    objCAF.MatricExamType = rbtnAnnual.Checked == true ? 1 : 2;
+                    objCAF.MatricRollNo = txtBoardRoll.Text;
+
+                    objCAF.ApplicantName = txtApplName.Text;
+                    objCAF.FatherName = txtFatherName.Text;
+                    objCAF.MotherName = txtMotherName.Text;
+
+                    //****************** Personal Deatils ******************
+
+                    objCAF.BloodGroupID = Convert.ToInt32(ddlBloodGroup.SelectedValue);
+                    objCAF.GenderID = Convert.ToInt32(ddlGender.SelectedValue);
+                    objCAF.ReligionID = Convert.ToInt32(ddlReligion.SelectedValue);
+                    objCAF.DOB = txtDOB.Text;
+
+                    //****************** Identification Deatils ******************
+
+                    objCAF.IDType = Convert.ToInt32(ddlIDType.SelectedValue);
+                    objCAF.IDNumber = txtAadhar.Text;
+                    objCAF.Domicile = Convert.ToInt32(ddlDomicile.SelectedValue);
+
+                    //****************** Address Deatils ******************
+
+                    objCAF.StateID = Convert.ToInt32(ddlState.SelectedValue);
+                    objCAF.DistID = Convert.ToInt32(hdnDist.Value); //Convert.ToInt32(ddlDist.SelectedValue);
+                    objCAF.BlockID = Convert.ToInt32(hdnBlock.Value);//Convert.ToInt32(ddlBlock.SelectedValue);
+                    objCAF.Address = txtAddress.Text;
+                    objCAF.Pincode = txtPincode.Text;
+                    objCAF.MobileNo = txtMobNo.Text;
+                    objCAF.whatsappNo = txtwhapNo.Text;//added by biswajit on date-5 / 19 / 22
+                    objCAF.AlternateNo = txtAlternateNo.Text;
+                    objCAF.ImageStatus = (!string.IsNullOrEmpty(hdnImgAppl.Value)) ? true : false;
+                    objCAF.Email = txtEMail.Text;
+                    objCAF.CreatedBy = Convert.ToInt32(Session["StudentUserId"]);
+                    ReturnMsg = objClient.AddBasicInformation(objCAF);
+                    if (ReturnMsg == "D")
+                    {
+                        ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Duplicate ID number Found which is already submitted by another applicant !</strong>','SAMS');", true);
+
+                        // ScriptManager.RegisterStartupScript(btnBasicInfoNext, this.GetType(), "MyScript", "jAlertSubmit('', '<strong>Duplicate ID number Found which is already submitted by another applicant !</strong>', 'TabCaf.aspx');", true);
+                    }
+                    else if (ReturnMsg == "M")
+                    {
+                        ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Duplicate 10th Roll No. Found which is already submitted by another applicant !</strong>','SAMS');", true);
+
+                        //ScriptManager.RegisterStartupScript(btnBasicInfoNext, this.GetType(), "MyScript", "jAlertSubmit('', '<strong>Duplicate 10th Roll No. Found which is already submitted by another applicant !</strong>', 'TabCaf.aspx');", true);
+                    }
+                    else
+                    {
+                        hdnAppid.Value = ReturnMsg;
+                        ClearBasicInformation();
+                        divAdditionalDetails.Visible = true;
+                        liAdditionalDetails.Attributes["class"] = "active";
+                        divBasicInformation.Visible = false;
+                        liBasicInformation.Attributes.Remove("class");
+                        ViewAdditionalDetails();
+                    }
+                    FillUniversity(ddlFirstPrefernce);
+                    FillUniversity(ddlSecondPrefernce);
+                    FillUniversity(ddlThirdPrefernce);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message + "btnBasicInfoNext_Click");
+                }
+                finally
+                {
+                    // ObjPAS = null;
+                }
+            }
+            //else
+            //{
+            //    System.Web.UI.ScriptManager.RegisterClientScriptBlock(this, this.GetType(), "AlertBox", Msg, true);
+            //}
+            //if (Session["TokenBasicInfo"].ToString() != null && Session["TokenBasicInfo"].ToString() != "")
+            //{
+
+            //}
+            //Session["TokenBasicInfo"] = "";
+        }
+    }
+    protected void btnAdditionalDetailsBack_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            ActionTrack objTrack = new ActionTrack();
+            objTrack.WriteEventLog("Button_click event of PG Common Application Form");
+            //Session["TokenBasicInfo"] = day + month + year + hour + min + sec;
+            if (Session["StudentUserId"] == null || Convert.ToInt32(hdnUserID.Value) != Convert.ToInt32(Session["StudentUserId"]))
+            {
+                //Response.Redirect("SessionOut.aspx", false);
+                Response.Redirect("../SessionOut.aspx?log=1");
+            }
+            else
+            {
+                divAdditionalDetails.Visible = false;
+                liAdditionalDetails.Attributes.Remove("class");
+                divBasicInformation.Visible = true;
+                liBasicInformation.Attributes["class"] = "active";
+                ViewBasicInformation(Convert.ToInt32(Session["StudentUserId"]));
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "btnAdditionalDetailsBack_Click");
+        }
+
+    }
+    protected void btnAdditionalDetailsNext_Click(object sender, EventArgs e)
+    {
+        ActionTrack objTrack = new ActionTrack();
+        objTrack.WriteEventLog("Button_click event of PG Common Application Form");
+
+        if (Session["StudentUserId"] == null || Convert.ToInt32(hdnUserID.Value) != Convert.ToInt32(Session["StudentUserId"]))
+        {
+            //Response.Redirect("SessionOut.aspx", false);
+            Response.Redirect("../SessionOut.aspx?log=1");
+        }
+        else
+        {
+            if (ValidateAdditionalDetailsServerSide() == true)
+            {
+                string ReturnMsg = "";
+                objClient = new SAMSPGBusinessClient();
+                CAF objCAF = new CAF();
+                try
+                {
+                    //****************** Basic Information ******************
+
+                    objCAF.Action = "B";
+                    objCAF.ApplicantID = Convert.ToInt32(hdnAppid.Value);
+                    objCAF.AdditionalDetailsID = Convert.ToInt32(hdnAdditionalDetailsID.Value);
+                    objCAF.UserID = Convert.ToInt32(Session["StudentUserId"]);
+
+                    int Category = 0, DisabilityType = 0;
+                    if (rbtGeneral.Checked == true)
+                    {
+                        Category = 1;
+                    }
+                    else if (rbtSC.Checked == true)
+                    {
+                        Category = 2;
+                    }
+                    else if (rbtST.Checked == true)
+                    {
+                        Category = 3;
+                    }
+                    else if (rbtnOBC.Checked == true)
+                    {
+                        Category = 4;
+                    }
+                    else if (rbtSEBC.Checked == true)
+                    {
+                        Category = 5;
+                    }
+                    objCAF.CategoryID = Category;
+                    objCAF.PH = chkPH.Checked == true ? true : false;
+                    int SubCategory = 0;
+                    if (rbtESM.Checked == true)
+                    {
+                        SubCategory = 1;
+                    }
+                    else if (rbtSDP.Checked == true)
+                    {
+                        SubCategory = 2;
+                    }
+                    else if (rbtCoM.Checked == true)
+                    {
+                        SubCategory = 3;
+                    }
+                    else if (rbtNon.Checked == true)
+                    {
+                        SubCategory = 4;
+                    }
+                    else
+                    {
+                        SubCategory = 0;
+                    }
+                    objCAF.SubCategoryID = SubCategory;
+
+                    if (chkPH.Checked == true)
+                    {
+                        if (rbtnTempDis.Checked == true)
+                        {
+                            DisabilityType = 1;
+                        }
+                        else if (rbtnPerDis.Checked == true)
+                        {
+                            DisabilityType = 2;
+                        }
+                        else
+                        {
+                            DisabilityType = 0;
+                        }
+                        objCAF.intPWDType = DisabilityType;
+
+                        objCAF.Blind = chkBlind.Checked == true ? true : false;
+                        objCAF.Hearing = chkHearing.Checked == true ? true : false;
+                        objCAF.Palsy = chkPalsy.Checked == true ? true : false;
+                        objCAF.Leprosy = chkLeprosy.Checked == true ? true : false;
+                        objCAF.Dwarf = chkDwarf.Checked == true ? true : false;
+                        objCAF.Acid = chkAcid.Checked == true ? true : false;
+                        objCAF.Muscular = chkMuscular.Checked == true ? true : false;
+                        objCAF.Autism = chkAutism.Checked == true ? true : false;
+                        objCAF.Intellect = chkIntellect.Checked == true ? true : false;
+                        objCAF.Learning = chkLearning.Checked == true ? true : false;
+                        objCAF.Mental = chkMental.Checked == true ? true : false;
+                        if (txtDisabilityPercentage.Text != "" && DisabilityType == 2)
+                        {
+                            objCAF.intDisabilityPercentage = Convert.ToInt32(txtDisabilityPercentage.Text);
+                        }
+                        else
+                        {
+                            objCAF.intDisabilityPercentage = 0;
+                        }
+                        if (txtudid.Text != "" && DisabilityType == 2)
+                        {
+                            objCAF.vchUdidNo = Convert.ToString(txtudid.Text);
+                        }
+                        else
+                        {
+                            objCAF.vchUdidNo = "";
+                        }
+                    }
+                    else
+                    {
+                        objCAF.intPWDType = 0;
+                        objCAF.Blind = false;
+                        objCAF.Hearing = false;
+                        objCAF.Palsy = false;
+                        objCAF.Leprosy = false;
+                        objCAF.Dwarf = false;
+                        objCAF.Acid = false;
+                        objCAF.Muscular = false;
+                        objCAF.Autism = false;
+                        objCAF.Intellect = false;
+                        objCAF.Learning = false;
+                        objCAF.Mental = false;
+                        objCAF.intDisabilityPercentage = 0;
+                        objCAF.vchUdidNo = "";
+                    }
+
+                    // objCAF.NCCA = chkNCCA.Checked == true ? true : false;
+                    objCAF.NCCB = chkNCCB.Checked == true ? true : false;
+                    objCAF.NCCC = chkNCCC.Checked == true ? true : false;
+                    objCAF.NSSUC = chkNSSUC.Checked == true ? true : false;
+                    objCAF.NSSSC = chkNSSSC.Checked == true ? true : false;
+                    objCAF.NSSNL = chkNSSNL.Checked == true ? true : false;
+                    objCAF.NSSIL = chkNSSIL.Checked == true ? true : false;
+                    objCAF.RRRP = chkRP.Checked == true ? true : false;
+                    objCAF.RRPR = chkPR.Checked == true ? true : false;
+                    objCAF.SGSL = chkSL.Checked == true ? true : false;
+                    objCAF.SGNL = chkSGNL.Checked == true ? true : false;
+                    objCAF.SGIL = chkSGIL.Checked == true ? true : false;
+                    objCAF.SGIU = chkIU.Checked == true ? true : false;
+                    objCAF.CreatedBy = Convert.ToInt32(Session["StudentUserId"]);
+
+                    ReturnMsg = objClient.AddAdditionalDetails(objCAF);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message + "btnAdditionalDetailsNext_Click");
+                }
+                finally
+                {
+                    // ObjPAS = null;
+                }
+                ClearAdditionalDetails();
+                divEducationalQualification.Visible = true;
+                liEducationalQualification.Attributes["class"] = "active";
+                divBasicInformation.Visible = false;
+                liBasicInformation.Attributes.Remove("class");
+                divAdditionalDetails.Visible = false;
+                liAdditionalDetails.Attributes.Remove("class");
+                ViewEducationalQualification();
+            }
+            //Session["TokenAditionalInfo"] = "";
+        }
+    }
+    protected void btnEducationalQualificationBack_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            ActionTrack objTrack = new ActionTrack();
+            objTrack.WriteEventLog("Button_click event of PG Common Application Form");
+            //  Session["TokenAditionalInfo"] = day + month + year + hour + min + sec;
+            if (Session["StudentUserId"] == null || Convert.ToInt32(hdnUserID.Value) != Convert.ToInt32(Session["StudentUserId"]))
+            {
+                //Response.Redirect("SessionOut.aspx", false);
+                Response.Redirect("../SessionOut.aspx?log=1");
+            }
+            else
+            {
+                divBasicInformation.Visible = false;
+                liBasicInformation.Attributes.Remove("class");
+                divEducationalQualification.Visible = false;
+                liEducationalQualification.Attributes.Remove("class");
+                divAdditionalDetails.Visible = true;
+                liAdditionalDetails.Attributes["class"] = "active";
+                ViewAdditionalDetails();
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "btnEducationalQualificationBack_Click");
+        }
+    }
+    protected void btnEducationalQualificationNext_Click(object sender, EventArgs e)
+    {
+        ActionTrack objTrack = new ActionTrack();
+        objTrack.WriteEventLog("Button_click event of PG Common Application Form");
+
+        if (Session["StudentUserId"] == null || Convert.ToInt32(hdnUserID.Value) != Convert.ToInt32(Session["StudentUserId"]))
+        {
+            //Response.Redirect("SessionOut.aspx", false);
+            Response.Redirect("../SessionOut.aspx?log=1");
+        }
+        else
+        {
+            if (ValidateEducationalDetailsServerSide() == true)
+            {
+                int Count = Convert.ToInt32(hdnPGSubjectCount.Value);
+                string MsgAdd = string.Empty;
+                string[] arr = new string[] { };
+                arr = hdnCPreference.Value.Split(',');
+
+                //*** commenetd by Dolagovinda Acharya on 6th-July-2021 to avoid this validation for giving collge prefrence if aganiin needed uncomment it.*****//
+
+                //if (Array.IndexOf(arr, "0") != -1)
+                //{
+                //    MsgAdd = "alert('Please select College Prefernce !')";
+                //    ScriptManager.RegisterStartupScript(btnEducationalQualificationNext, this.GetType(), "Myalert", "jAlertSubmit('btnEducationalQualificationNext_Click', '<strong> Please select College Prefernce!</strong>', 'TabCaf.aspx" + "');", true);
+
+                //}
+                //else 
+
+                if (Count < 1)
+                {
+                    ScriptManager.RegisterStartupScript(btnEducationalQualificationNext, this.GetType(), "Myalert", "jAlertSubmit('btnEducationalQualificationNext_Click', '<strong> Please select atleast one PG Entrance Subject!</strong>', 'TabCaf.aspx" + "');", true);
+
+                }
+                else if (hdngraduationPassedWith.Value == "1" && (hdnHonsCredit.Value == "1" || hdnHonsCredit.Value == "2"))
+                {
+                    ScriptManager.RegisterStartupScript(btnEducationalQualificationNext, this.GetType(), "Myalert", "jAlertSubmit('btnEducationalQualificationNext_Click', '<strong> Please select 84 or Non CBCS as Core Credit!</strong>', 'TabCaf.aspx" + "');", true);
+                }
+
+                else
+                {
+
+
+                    //if (Session["TokenEducationalInfo"].ToString() != null && Session["TokenEducationalInfo"].ToString() != "")
+                    //{
+                    string ReturnMsg = "";
+                    objClient = new SAMSPGBusinessClient();
+                    CAF objCAF = new CAF();
+                    try
+                    {
+                        //****************** Basic Information ******************
+
+                        objCAF.Action = "E";
+                        objCAF.ApplicantID = Convert.ToInt32(hdnAppid.Value);
+                        objCAF.QualificationXML = CommonHelper.SerializeToXMLString(ConvertQualificationToList());
+                        objCAF.ExamType = rbtnPassed.Checked == true ? 1 : 2;
+                        objCAF.Distinction = rbtnDistnctionYes.Checked == true ? 1 : 2;
+                        objCAF.PassedGraduationWith = Convert.ToInt32(hdngraduationPassedWith.Value);
+                        objCAF.CoreID = Convert.ToInt32(hdnHons.Value);
+                        objCAF.Elective1ID = Convert.ToInt32(hdnElective1.Value);
+                        objCAF.Elective2ID = Convert.ToInt32(hdnElective2.Value);
+                        objCAF.CoreCreditID = Convert.ToInt32(hdnHonsCredit.Value);
+                        objCAF.FirstElectiveCreditID = Convert.ToInt32(hdnElective1Credit.Value);
+                        objCAF.SecondElectiveCreditID = Convert.ToInt32(hdnElective2Credit.Value);
+                        objCAF.SubjectXML = Uri.UnescapeDataString(hdnSubject.Value);
+                        objCAF.FirstPreferID = Convert.ToInt32(ddlFirstPrefernce.SelectedValue);
+                        objCAF.SecondPreferID = Convert.ToInt32(ddlSecondPrefernce.SelectedValue);
+                        objCAF.ThirdPreferID = Convert.ToInt32(ddlThirdPrefernce.SelectedValue);
+                        ReturnMsg = objClient.AddQualificationDetails(objCAF);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(ex.Message + "btnEducationalQualificationNext_Click");
+                    }
+                    finally
+                    {
+                        // ObjPAS = null;
+                    }
+                    ClearEducationalQualification();
+                    divImageUpload.Visible = true;
+                    liImageUpload.Attributes["class"] = "active";
+                    divBasicInformation.Visible = false;
+                    liBasicInformation.Attributes.Remove("class");
+                    divAdditionalDetails.Visible = false;
+                    liAdditionalDetails.Attributes.Remove("class");
+                    divEducationalQualification.Visible = false;
+                    liEducationalQualification.Attributes.Remove("class");
+                    ViewPhoto();
+
+                    //Session["TokenEducationalInfo"] = "";
+                }
+            }
+        }
+    }
+    protected void btnImageUploadBack_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            ActionTrack objTrack = new ActionTrack();
+            objTrack.WriteEventLog("Button_click event of PG Common Application Form");
+            // Session["TokenEducationalInfo"] = day + month + year + hour + min + sec; 
+            if (Session["StudentUserId"] == null || Convert.ToInt32(hdnUserID.Value) != Convert.ToInt32(Session["StudentUserId"]))
+            {
+                // Response.Redirect("SessionOut.aspx", false);
+                Response.Redirect("../SessionOut.aspx?log=1");
+            }
+            else
+            {
+                divBasicInformation.Visible = false;
+                liBasicInformation.Attributes.Remove("class");
+                divEducationalQualification.Visible = false;
+                liEducationalQualification.Attributes.Remove("class");
+                divImageUpload.Visible = false;
+                liImageUpload.Attributes.Remove("class");
+                divEducationalQualification.Visible = true;
+                liEducationalQualification.Attributes["class"] = "active";
+                ViewEducationalQualification();
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "btnImageUploadBack_Click");
+        }
+    }
+    protected void ViewBasicInformation(int UserID)
+    {
+        if (Session["StudentUserId"] == null || Convert.ToInt32(hdnUserID.Value) != Convert.ToInt32(Session["StudentUserId"]))
+        {
+            // Response.Redirect("SessionOut.aspx", false);
+            Response.Redirect("../SessionOut.aspx?log=1");
+        }
+        else
+        {
+            List<CAF> list = new List<CAF>();
+            CAF obj = new CAF();
+
+            try
+            {
+                using (SAMSPGBusinessClient client = new SAMSPGBusinessClient())
+                {
+                    obj.Action = "B";
+                    obj.UserID = UserID;
+                    obj.ApplicantID = 0;
+                    list = client.ViewCAFData(obj);
+
+                    foreach (var data in list)
+                    {
+                        if (list != null && list.Count() > 0)
+                        {
+                            //****************** Basic Information ******************
+
+                            hdnAppid.Value = data.ApplicantID.ToString();
+                            hdnPaymentStatus.Value = data.UpdateStatus.ToString(); ;
+
+                            ddlBoard.SelectedValue = data.MatricBoardID.ToString();
+                            ddlYOP.SelectedValue = data.MatricYearOfPassing.ToString();
+                            if (data.MatricExamType == 1)
+                            {
+                                rbtnAnnual.Checked = true;
+                                rbtnSuppl.Checked = false;
+                            }
+                            else if (data.MatricExamType == 2)
+                            {
+                                rbtnSuppl.Checked = true;
+                                rbtnAnnual.Checked = false;
+                            }
+                            txtBoardRoll.Text = data.MatricRollNo.ToUpper();
+
+                            txtApplName.Text = Convert.ToString(data.ApplicantName) == "" ? "" : Convert.ToString(data.ApplicantName);
+                            txtFatherName.Text = Convert.ToString(data.FatherName) == "" ? "" : Convert.ToString(data.FatherName);
+                            txtMotherName.Text = Convert.ToString(data.MotherName) == "" ? "" : Convert.ToString(data.MotherName);
+
+                            //****************** Personal Details ******************
+
+                            ddlBloodGroup.SelectedValue = Convert.ToString(data.BloodGroupID) == "" ? "0" : Convert.ToString(data.BloodGroupID);
+                            ddlGender.SelectedValue = Convert.ToString(data.GenderID) == "" ? "0" : Convert.ToString(data.GenderID);
+                            ddlReligion.SelectedValue = Convert.ToString(data.ReligionID) == "" ? "0" : Convert.ToString(data.ReligionID);
+                            txtDOB.Text = Convert.ToString(data.DOB);
+
+                            //****************** Identification Details ******************
+
+                            ddlIDType.SelectedValue = Convert.ToString(data.IDType) == "" ? "0" : Convert.ToString(data.IDType);
+                            txtAadhar.Text = Convert.ToString(data.IDNumber) == "" ? "" : Convert.ToString(data.IDNumber);
+                            ddlDomicile.SelectedValue = data.Domicile.ToString();
+
+                            //****************** Address Deatils ******************
+
+                            ddlState.SelectedValue = Convert.ToString(data.StateID) == "" ? "0" : Convert.ToString(data.StateID);
+                            GetDist(Convert.ToInt32(ddlState.SelectedValue), ddlDist);
+                            ddlDist.SelectedValue = Convert.ToString(data.DistID) == "" ? "0" : Convert.ToString(data.DistID);
+                            GetBlock(Convert.ToInt32(ddlDist.SelectedValue), ddlBlock);
+                            ddlBlock.SelectedValue = Convert.ToString(data.BlockID) == "" ? "0" : Convert.ToString(data.BlockID);
+                            txtAddress.Text = data.Address;
+                            txtPincode.Text = data.Pincode;
+                            txtMobNo.Text = data.MobileNo;
+                            txtwhapNo.Text = data.whatsappNo;//added by devee dated 08-06-2022
+                            txtAlternateNo.Text = data.AlternateNo;
+                            txtEMail.Text = data.Email;
+
+
+                        }
+                    }
+                }
+            }
+            catch (FaultException ex)
+            {
+                throw new Exception(ex.Message + "ViewBasicInformation");
+            }
+        }
+    }
+    protected void ViewAdditionalDetails()
+    {
+        if (Session["StudentUserId"] == null || Convert.ToInt32(hdnUserID.Value) != Convert.ToInt32(Session["StudentUserId"]))
+        {
+            //Response.Redirect("SessionOut.aspx", false);
+            Response.Redirect("../SessionOut.aspx?log=1");
+        }
+        else
+        {
+            List<CAF> list = new List<CAF>();
+            CAF obj = new CAF();
+
+            try
+            {
+                using (SAMSPGBusinessClient client = new SAMSPGBusinessClient())
+                {
+                    obj.Action = "A";
+                    obj.UserID = 0;
+                    obj.ApplicantID = Convert.ToInt32(hdnAppid.Value);
+                    list = client.ViewCAFData(obj);
+
+                    foreach (var data in list)
+                    {
+                        hdnAdditionalDetailsID.Value = data.AdditionalDetailsID.ToString();
+                        if (list != null && list.Count() > 0)
+                        {
+                            if (data.CategoryID == 1)
+                            {
+                                rbtGeneral.Checked = true;
+                            }
+                            else if (data.CategoryID == 2)
+                            {
+                                rbtSC.Checked = true;
+                            }
+                            else if (data.CategoryID == 3)
+                            {
+                                rbtST.Checked = true;
+                            }
+                            else if (data.CategoryID == 4)
+                            {
+                                rbtnOBC.Checked = true;
+                            }
+                            else if (data.CategoryID == 5)
+                            {
+                                rbtSEBC.Checked = true;
+                            }
+                            chkPH.Checked = data.PH == true ? true : false;
+                            if (data.SubCategoryID == 1)
+                            {
+                                rbtESM.Checked = true;
+                            }
+                            else if (data.SubCategoryID == 2)
+                            {
+                                rbtSDP.Checked = true;
+                            }
+                            else if (data.SubCategoryID == 3)
+                            {
+                                rbtCoM.Checked = true;
+                            }
+                            else
+                            {
+                                rbtNon.Checked = true;
+                            }
+
+                            if (data.intPWDType == 1)
+                            {
+                                rbtnTempDis.Checked = true;
+                                //PercentageHide.Visible = false;
+                                //PercentageHide1.Visible = false;
+                            }
+                            else if (data.intPWDType == 2)
+                            {
+                                rbtnPerDis.Checked = true;
+                                //PercentageHide.Visible = true;
+                                //PercentageHide1.Visible = true;
+                            }
+                            else
+                            {
+                                rbtnTempDis.Checked = false;
+                                rbtnPerDis.Checked = false;
+                                //PercentageHide.Visible = false;
+                                //PercentageHide1.Visible = false;
+                            }
+                            chkBlind.Checked = data.Blind == true ? true : false;
+                            chkHearing.Checked = data.Hearing == true ? true : false;
+                            chkPalsy.Checked = data.Palsy == true ? true : false;
+                            chkLeprosy.Checked = data.Leprosy == true ? true : false;
+                            chkDwarf.Checked = data.Dwarf == true ? true : false;
+                            chkAcid.Checked = data.Acid == true ? true : false;
+                            chkMuscular.Checked = data.Muscular == true ? true : false;
+                            chkAutism.Checked = data.Autism == true ? true : false;
+                            chkIntellect.Checked = data.Intellect == true ? true : false;
+                            chkLearning.Checked = data.Learning == true ? true : false;
+                            chkMental.Checked = data.Mental == true ? true : false;
+                            txtDisabilityPercentage.Text = Convert.ToString(data.intDisabilityPercentage);
+                            txtudid.Text = data.vchUdidNo;
+
+                            //chkNCCA.Checked = data.NCCA == true ? true : false;
+                            chkNCCB.Checked = data.NCCB == true ? true : false;
+                            chkNCCC.Checked = data.NCCC == true ? true : false;
+                            chkNSSUC.Checked = data.NSSUC == true ? true : false;
+                            chkNSSSC.Checked = data.NSSSC == true ? true : false;
+                            chkNSSNL.Checked = data.NSSNL == true ? true : false;
+                            chkNSSIL.Checked = data.NSSIL == true ? true : false;
+                            chkRP.Checked = data.RRRP == true ? true : false;
+                            chkPR.Checked = data.RRPR == true ? true : false;
+                            chkSL.Checked = data.SGSL == true ? true : false;
+                            chkSGNL.Checked = data.SGNL == true ? true : false;
+                            chkSGIL.Checked = data.SGIL == true ? true : false;
+                            chkIU.Checked = data.SGIU == true ? true : false;
+                        }
+                    }
+                }
+            }
+            catch (FaultException ex)
+            {
+                throw new Exception(ex.Message + "ViewAdditionalDetails");
+            }
+        }
+    }
+    protected void ViewEducationalQualification()
+    {
+        BindPlusTwoYOP(Convert.ToInt32(hdnYOP.Value));
+        if (Session["StudentUserId"] == null || Convert.ToInt32(hdnUserID.Value) != Convert.ToInt32(Session["StudentUserId"]))
+        {
+            //Response.Redirect("SessionOut.aspx", false);
+            Response.Redirect("../SessionOut.aspx?log=1");
+        }
+        else
+        {
+            ddl10thBoard.Enabled = false;
+            ddl10thYOP.Enabled = false;
+            txt10thRoll.Enabled = false;
+            try
+            {
+                using (SAMSPGBusinessClient client = new SAMSPGBusinessClient())
+
+                {
+                    CAF objG = new CAF();
+                    List<CAF> listBasicInfo = new List<CAF>();
+                    objG.Action = "B";
+                    objG.UserID = Convert.ToInt32(Session["StudentUserId"]);
+                    objG.ApplicantID = Convert.ToInt32(hdnAppid.Value);
+                    listBasicInfo = client.ViewCAFData(objG);
+                    //****************** Qualification Deatils ******************
+
+                    CAF objQ = new CAF();
+                    List<CAF> listQualification = new List<CAF>();
+                    objQ.Action = "Q";
+                    objQ.UserID = 0;
+                    objQ.ApplicantID = Convert.ToInt32(hdnAppid.Value);
+                    listQualification = client.ViewCAFData(objQ);
+                    if (listQualification != null && listQualification.Count() > 0)
+                    {
+                        //ddl10thBoard.Enabled = false;
+                        //ddl10thYOP.Enabled = false;
+                        //txt10thRoll.Enabled = false;
+
+                        ddl10thMarkType.SelectedValue = listQualification[0].MarkTypeID.ToString();
+                        //ddl10thBoard.SelectedValue = listQualification[0].BoardID.ToString();
+                        ddl10thBoard.SelectedValue = listBasicInfo[0].MatricBoardID.ToString();
+                        ddl10thYOP.SelectedValue = listBasicInfo[0].MatricYearOfPassing.ToString();
+                        //ddl10thYOP.SelectedValue = listQualification[0].YearOfPassing.ToString();
+                        // txt10thRoll.Text = listQualification[0].RollNo.ToString();
+                        txt10thRoll.Text = listBasicInfo[0].MatricRollNo.ToString();
+
+                        if (listQualification[0].MarkTypeID == 1)
+                        {
+                            //txt10thMaxMark.Enabled = false;
+                            txt10thMaxMark.Text = listQualification[0].MaxMark.ToString();
+                            txt10thSecuredMark.Text = listQualification[0].CGPA.ToString();
+                            txt10thPercentage.Text = listQualification[0].Percentage.ToString();
+                            txt10thMaxMark.Attributes.Add("ReadOnly", "ReadOnly");
+                        }
+                        else if (listQualification[0].MarkTypeID == 2)
+                        {
+                            //txt10thMaxMark.Enabled = false;
+                            txt10thMaxMark.Text = string.Empty;
+                            txt10thSecuredMark.Style.Add("display", "none");
+                            ddl10thGrade.Style.Add("display", "block");
+                            ddl10thGrade.SelectedValue = listQualification[0].Grade.ToString();
+                            txt10thPercentage.Text = string.Empty;
+                        }
+                        else if (listQualification[0].MarkTypeID == 3)
+                        {
+                            txt10thMaxMark.Text = listQualification[0].MaxMark.ToString();
+                            txt10thSecuredMark.Text = listQualification[0].ObtainedMark.ToString();
+                            txt10thPercentage.Text = listQualification[0].Percentage.ToString();
+                        }
+
+                        ddlPlusTwoStream.SelectedValue = listQualification[1].StreamID.ToString();
+                        ddlPlusTwoMarkType.SelectedValue = listQualification[1].MarkTypeID.ToString();
+                        ddlPlusTwoBoard.SelectedValue = listQualification[1].BoardID.ToString();
+                        if (ddlPlusTwoYOP.Items.FindByValue(listQualification[1].YearOfPassing.ToString()) != null)
+                            ddlPlusTwoYOP.SelectedValue = listQualification[1].YearOfPassing.ToString();
+                        txtPlusTwoRoll.Text = listQualification[1].RollNo.ToString();
+                        if (listQualification[1].MarkTypeID == 1)
+                        {
+                            //txtPlusTwoMaxMark.Enabled = false;
+                            txtPlusTwoMaxMark.Text = listQualification[1].MaxMark.ToString();
+                            txtPlusTwoSecuredMark.Text = listQualification[1].CGPA.ToString();
+                            txtPlusTwoPercentage.Text = listQualification[1].Percentage.ToString();
+                            txtPlusTwoMaxMark.Attributes.Add("ReadOnly", "ReadOnly");
+                        }
+                        else if (listQualification[1].MarkTypeID == 2)
+                        {
+                            //txtPlusTwoMaxMark.Enabled = false;
+                            txtPlusTwoMaxMark.Text = string.Empty;
+                            txtPlusTwoSecuredMark.Style.Add("display", "none");
+                            ddlPlusTwoGrade.Style.Add("display", "block");
+                            ddlPlusTwoGrade.SelectedValue = listQualification[1].Grade.ToString();
+                            txtPlusTwoPercentage.Text = string.Empty;
+                        }
+                        else if (listQualification[1].MarkTypeID == 3)
+                        {
+                            txtPlusTwoMaxMark.Text = listQualification[1].MaxMark.ToString();
+                            txtPlusTwoSecuredMark.Text = listQualification[1].ObtainedMark.ToString();
+                            txtPlusTwoPercentage.Text = listQualification[1].Percentage.ToString();
+                        }
+
+                        if (listQualification.Count == 3)
+                        {
+                            GetGraduationStream(Convert.ToInt32(ddlPlusTwoStream.SelectedValue), ddlGraduationStream);
+                            ddlGraduationStream.SelectedValue = listQualification[2].StreamID.ToString();
+                            if (ddlGraduationStream.SelectedValue != "1" && ddlGraduationStream.SelectedValue != "2" && ddlGraduationStream.SelectedValue != "3")
+                            {
+                                divHonsPass.Style.Add("display", "none");
+                                divElective1.Style.Add("display", "none");
+                                divElective2.Style.Add("display", "none");
+                                divCredit1.Style.Add("display", "none");
+                                divCredit2.Style.Add("display", "none");
+                                lblCore.InnerText = "Subject";
+                                lblCBCS.Attributes.Add("style", "display:none");
+                                lblCGPA.Attributes.Add("style", "display:none");
+                            }
+                            else
+                            {
+                                lblCBCS.Attributes.Add("style", "display:block");
+                                lblCGPA.Attributes.Add("style", "display:block");
+                            }
+
+                            ddlGraduationMarkType.SelectedValue = listQualification[2].MarkTypeID.ToString();
+                            ddlGraduationBoard.SelectedValue = listQualification[2].BoardID.ToString();
+                            GetGraduationYOP(Convert.ToInt32(ddlPlusTwoYOP.SelectedValue), ddlGraduationYOP);
+                            if (ddlGraduationYOP.Items.FindByValue(listQualification[2].YearOfPassing.ToString()) != null)
+                                ddlGraduationYOP.SelectedValue = listQualification[2].YearOfPassing.ToString();
+                            txtGraduationRoll.Text = listQualification[2].RollNo.ToString();
+                            if (listQualification[2].MarkTypeID == 1)
+                            {
+                                //txtGraduationMaxMark.Enabled = false;
+                                txtGraduationMaxMark.Text = listQualification[2].MaxMark.ToString();
+                                txtGraduationSecuredMark.Text = listQualification[2].CGPA.ToString();
+                                txtGraduationPercentage.Text = listQualification[2].Percentage.ToString();
+                                txtGraduationMaxMark.Attributes.Add("ReadOnly", "ReadOnly");
+                            }
+                            else if (listQualification[2].MarkTypeID == 2)
+                            {
+                                //txtGraduationMaxMark.Enabled = false;
+                                txtGraduationMaxMark.Text = string.Empty;
+                                txtGraduationSecuredMark.Style.Add("display", "none");
+                                ddlGraduationGrade.Style.Add("display", "block");
+                                ddlGraduationGrade.SelectedValue = listQualification[2].Grade.ToString();
+                                txtGraduationPercentage.Text = string.Empty;
+                            }
+                            else if (listQualification[2].MarkTypeID == 3)
+                            {
+                                txtGraduationMaxMark.Text = listQualification[2].MaxMark.ToString();
+                                txtGraduationSecuredMark.Text = listQualification[2].ObtainedMark.ToString();
+                                txtGraduationPercentage.Text = listQualification[2].Percentage.ToString();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        ddl10thBoard.SelectedValue = listBasicInfo[0].MatricBoardID.ToString();
+                        ddl10thYOP.SelectedValue = listBasicInfo[0].MatricYearOfPassing.ToString();
+                        txt10thRoll.Text = listBasicInfo[0].MatricRollNo.ToString();
+
+                        ApplicantInfo objApplicantInfo = new ApplicantInfo();
+                        List<ApplicantInfo> listApplicantInfo = new List<ApplicantInfo>();
+                        int Year = listBasicInfo[0].MatricYearOfPassing;
+                        if (Year == 2017) { objApplicantInfo.Action = 'E'; }
+                        if (Year == 2016) { objApplicantInfo.Action = 'D'; }
+                        if (Year == 2015) { objApplicantInfo.Action = 'B'; }
+                        if (Year == 2014) { objApplicantInfo.Action = 'A'; }
+                        if (Year == 2013) { objApplicantInfo.Action = 'C'; }
+                        objApplicantInfo.MatricRollNo = listBasicInfo[0].MatricRollNo.ToString();
+                        listApplicantInfo = client.BSEBoardMark(objApplicantInfo);
+                        if (listApplicantInfo.Count() > 0)
+                        {
+                            txt10thMaxMark.Text = listApplicantInfo[0].MarkSecured2.ToString();
+                            txt10thSecuredMark.Text = listApplicantInfo[0].MarkSecured1.ToString();
+                            double Percentage = (double)(listApplicantInfo[0].MarkSecured1 * 100) / (listApplicantInfo[0].MarkSecured2);
+                            Double dc = Math.Round((Double)Percentage, 2);
+                            txt10thPercentage.Text = dc.ToString(); ;
+                        }
+
+                        ddl10thMarkType.SelectedValue = "3";
+                        //ddl10thBoard.Enabled = false;
+                        //ddl10thYOP.Enabled = false;
+                        //txt10thRoll.Enabled = false;
+                    }
+
+                    //****************** General Info Details ******************
+
+                    foreach (var data in listBasicInfo)
+                    {
+                        if (listBasicInfo != null && listBasicInfo.Count() > 0)
+                        {
+                            // rbtnDistnctionYes.Checked = data.Distinction == 1 ? true : false;
+                            rbtnPassed.Checked = data.ExamType == 1 ? true : false;
+                            DisableGraduationData(data.ExamType);
+                            rbtnDistnctionYes.Checked = data.Distinction == 1 ? true : false;
+                            rbtnDistinctionNo.Checked = data.Distinction == 2 ? true : false;
+                            rbtnAppeared.Checked = data.ExamType == 2 ? true : false;
+                            rbtnHonours.Checked = data.PassedGraduationWith == 1 ? true : false;
+                            rbtnPass.Checked = data.PassedGraduationWith == 2 ? true : false;
+                            if (data.PassedGraduationWith == 1)
+                            {
+                                divHonsPass.Attributes.Add("style", "display:block");
+                                divCore.Attributes.Add("style", "display:block");
+                                divCredit1.Attributes.Add("style", "display:block");
+                                divCredit2.Attributes.Add("style", "display:block");
+                                divElective1.Attributes.Add("style", "display:block");
+                                lblCore.InnerText = "Core/Hons";
+                                lblElective1.InnerText = "Generic Elective";
+                                divElective2.Attributes.Add("style", "display:none");
+                                ElectiveAstrc.Attributes.Add("style", "display:none");
+                                CreditAstrc.Attributes.Add("style", "display:none");
+                            }
+                            else if (data.PassedGraduationWith == 2)
+                            {
+                                divHonsPass.Attributes.Add("style", "display:block");
+                                divCore.Attributes.Add("style", "display:block");
+                                divCredit1.Attributes.Add("style", "display:block");
+                                divCredit2.Attributes.Add("style", "display:block");
+                                divElective1.Attributes.Add("style", "display:block");
+                                divElective2.Attributes.Add("style", "display:block");
+                                //lblCore.InnerText = "Discipline Specific Core1";
+                                //lblElective1.InnerText = "Discipline Specific Core2";
+                                //lblElective2.InnerText = "Discipline Specific Core3";
+                                ElectiveAstrc.Attributes.Add("style", "display:block");
+                                CreditAstrc.Attributes.Add("style", "display:block");
+                            }
+
+                            if (ddlGraduationStream.SelectedValue != "0")
+                            {
+                                GetCoreSubject(Convert.ToInt32(ddlGraduationStream.SelectedValue), ddlGraduationHons);
+                                if (ddlGraduationHons.Items.FindByValue(data.CoreID.ToString()) != null)
+                                    ddlGraduationHons.SelectedValue = data.CoreID.ToString();
+                                GetCoreSubject(Convert.ToInt32(ddlGraduationStream.SelectedValue), ddlGraduationElective1);
+                                if (ddlGraduationElective1.Items.FindByValue(data.Elective1ID.ToString()) != null)
+                                    ddlGraduationElective1.SelectedValue = data.Elective1ID.ToString();
+                                GetCoreSubject(Convert.ToInt32(ddlGraduationStream.SelectedValue), ddlGraduationElective2);
+                                if (ddlGraduationElective2.Items.FindByValue(data.Elective2ID.ToString()) != null)
+                                    ddlGraduationElective2.SelectedValue = data.Elective2ID.ToString();
+                            }
+
+                            ddlCredit.SelectedValue = data.CoreCreditID.ToString();
+                            ddlElective1Credit.SelectedValue = data.FirstElectiveCreditID.ToString();
+                            ddlElective2Credit.SelectedValue = data.SecondElectiveCreditID.ToString();
+                            GetPGCourse(Convert.ToInt32(ddlGraduationHons.SelectedValue), Convert.ToInt32(ddlGraduationElective1.SelectedValue), ddlPGEntranceSubject);
+                            if (ddlFirstPrefernce.Items.FindByValue(data.FirstPreferID.ToString()) != null)
+                                ddlFirstPrefernce.SelectedValue = data.FirstPreferID.ToString();
+                            if (ddlSecondPrefernce.Items.FindByValue(data.SecondPreferID.ToString()) != null)
+                                ddlSecondPrefernce.SelectedValue = data.SecondPreferID.ToString();
+                            if (ddlThirdPrefernce.Items.FindByValue(data.ThirdPreferID.ToString()) != null)
+                                ddlThirdPrefernce.SelectedValue = data.ThirdPreferID.ToString();
+                            if (data.PassedGraduationWith == 2)
+                            {
+                                if (ddlGraduationStream.SelectedValue == "1" || ddlGraduationStream.SelectedValue == "2")
+                                {
+                                    if (Convert.ToInt32(ddlGraduationYOP.SelectedValue) < 2016)
+                                    {
+                                        lblCore.InnerText = "Subject Paper1";
+                                        lblElective1.InnerText = "Pass Paper2";
+                                        divElective2.Style.Add("display", "none");
+                                        ddlGraduationElective2.SelectedValue = "0";
+                                        ddlElective2Credit.SelectedValue = "0";
+                                    }
+                                    else
+                                    {
+                                        lblCore.InnerText = "Discipline Specific Core1";
+                                        lblElective1.InnerText = "Discipline Specific Core2";
+                                        lblElective2.InnerText = "Discipline Specific Core3";
+
+
+                                    }
+                                }
+                                if (ddlGraduationStream.SelectedValue == "3")
+                                {
+                                    if (Convert.ToInt32(ddlGraduationYOP.SelectedValue) >= 2016)
+                                    {
+                                        lblCore.InnerText = "Discipline Specific Core1";
+                                        // lblElective1.InnerText = "Pass Paper2";
+                                        divElective1.Style.Add("display", "none");
+                                        divElective2.Style.Add("display", "none");
+                                        ddlGraduationElective2.SelectedValue = "0";
+                                        ddlElective2Credit.SelectedValue = "0";
+                                        ddlGraduationElective1.SelectedValue = "0";
+                                        ddlElective1Credit.SelectedValue = "0";
+                                    }
+                                    else
+                                    {
+                                        lblCore.InnerText = "Pass Paper1";
+                                        lblElective1.InnerText = "Pass Paper2";
+                                        divElective2.Style.Add("display", "none");
+                                        ddlGraduationElective2.SelectedValue = "0";
+                                        ddlElective2Credit.SelectedValue = "0";
+                                        //lblElective2.InnerText = "Discipline Specific Core3";
+
+
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                    //****************** Entrance Subject Deatils ******************
+                    CAF objE = new CAF();
+                    List<CAF> listEntrance = new List<CAF>();
+                    objE.Action = "E";
+                    objE.UserID = 0;
+                    objE.ApplicantID = Convert.ToInt32(hdnAppid.Value);
+                    listEntrance = client.ViewCAFData(objE);
+
+                    if (listEntrance.Count > 0)
+                    {
+                        BindEntranceSubjectTable(gvPGSubject, listEntrance);
+                        ddlGraduationHons.Enabled = false;
+                        ddlGraduationElective1.Enabled = false;
+                        ddlGraduationElective2.Enabled = false;
+                        ddlCredit.Enabled = false;
+                        ddlElective1Credit.Enabled = false;
+                        ddlElective2Credit.Enabled = false;
+                        rbtnHonours.Enabled = false;
+                        rbtnPass.Enabled = false;
+                        //lblNote.Visible = true;
+                        lblNote.Attributes.Add("style", "display:block");
+                    }
+
+
+                }
+            }
+            catch (FaultException ex)
+            {
+                throw new Exception(ex.Message + "ViewEducationalQualification");
+            }
+        }
+    }
+    protected void ViewPhoto()
+    {
+        if (Session["StudentUserId"] == null || Convert.ToInt32(hdnUserID.Value) != Convert.ToInt32(Session["StudentUserId"]))
+        {
+            // Response.Redirect("SessionOut.aspx", false);
+            Response.Redirect("../SessionOut.aspx?log=1");
+        }
+        else
+        {
+            List<CAF> list = new List<CAF>();
+            CAF obj = new CAF();
+
+            try
+            {
+                GetInfo();
+                using (SAMSPGBusinessClient client = new SAMSPGBusinessClient())
+                {
+                    obj.Action = "P";
+                    obj.UserID = 0;
+                    obj.ApplicantID = Convert.ToInt32(hdnAppid.Value);
+                    list = client.ViewCAFData(obj);
+
+                    foreach (var data in list)
+                    {
+                        if (list != null && list.Count() > 0)
+                        {
+                            //  string key = "S#a!m(S&_)7A!pPG";
+                            string Encclsid = EncryptString(key, 2.ToString());
+                            string Encid = EncryptString(key, data.ImageName);
+                            hdnAppid.Value = data.ApplicantID.ToString();
+                            //if (data.ImageName.ToString() == "")
+                            //{
+                            //    ImgAppl.ImageUrl = "~/images/noimage.JPG";
+                            //}
+                            //else
+                            //{
+                            //    ImgAppl.ImageUrl = ("../DownloadImage.ashx?clsid=2&id=" + data.ImageName.ToString());
+                            //    hdnImgAppl.Value = data.ImageName.ToString();
+                            //}
+                            if (data.ImageName.ToString() == "")
+                            {
+                                ImgAppl.Attributes.Add("src", "../images/noimage.JPG");
+                            }
+                            else
+                            {
+                                ImgAppl.Attributes.Add("src", "~/DownloadImage.ashx?clsid=" + Encclsid + "&id=" + Encid + "");
+
+                                //ImgAppl.Attributes.Add("src", "~/DownloadImage.ashx?clsid=2&id=" + data.ImageName.ToString() + "");
+
+                                hdnImgAppl.Value = data.ImageName.ToString();
+                            }
+                        }
+                    }
+                }
+            }
+            catch (FaultException ex)
+            {
+                throw new Exception(ex.Message + "ViewPhoto");
+            }
+        }
+    }
+
+    protected void GetInfo()
+    {
+        if (Session["StudentUserId"] == null || Convert.ToInt32(hdnUserID.Value) != Convert.ToInt32(Session["StudentUserId"]))
+        {
+            Response.Redirect("../SessionOut.aspx?log=1");
+        }
+        else
+        {
+            try
+            {
+                List<CAF> list = new List<CAF>();
+                CAF obj = new CAF();
+                using (SAMSPGBusinessClient client = new SAMSPGBusinessClient())
+
+                {
+                    obj.Action = "T";
+                    obj.UserID = Convert.ToInt32(Session["StudentUserId"]);
+                    //obj.ApplicantID = 0;
+                    list = client.ViewCAFData(obj);
+                    if (list != null && list.Count() > 0)
+                    {
+                        //
+                        //hdnAppid.Value = list[0].ApplicantID.ToString();
+                        obj.ApplicantID = Convert.ToInt32(hdnAppid.Value);
+
+                        hdnAccNo.Value = Convert.ToString(list[0].AccountNo) == "" ? "" : Convert.ToString(list[0].AccountNo);
+                        txtAno.Text = hdnAccNo.Value;
+
+                        hdnIFSC.Value = Convert.ToString(list[0].IFSCCode) == "" ? "" : Convert.ToString(list[0].IFSCCode);
+                        txtIFSC.Text = hdnIFSC.Value;
+
+                        hdnMICR.Value = Convert.ToString(list[0].MICRCode) == "" ? "" : Convert.ToString(list[0].MICRCode);
+                        txtMICR.Text = hdnMICR.Value;
+
+                        hdnBankName.Value = Convert.ToString(list[0].BankName) == "" ? "" : Convert.ToString(list[0].BankName);
+                        txtBname.Text = hdnBankName.Value;
+
+                        hdnBrnchName.Value = Convert.ToString(list[0].BranchName) == "" ? "" : Convert.ToString(list[0].BranchName);
+                        txtBranchName.Text = hdnBrnchName.Value;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + "GetInfo");
+            }
+        }
+    }
+
+    protected void GetDist(int StateID, DropDownList ddl)
+    {
+        try
+        {
+            DataSet dsDistrict = new DataSet();
+            dsDistrict.ReadXml(Xpath + "/M_DISTRICT.xml");
+            if (StateID != 1)
+                StateID = 35;
+            var filter = dsDistrict.Tables[0].AsEnumerable().
+                              Where(x => x.Field<string>("StateID") == StateID.ToString()).CopyToDataTable();
+
+            ddl.DataSource = filter;
+            ddl.DataTextField = "DistrictName";
+            ddl.DataValueField = "DistrictID";
+            ddl.DataBind();
+            ddl.Items.Insert(0, new ListItem { Text = "-SELECT-", Value = "0" });
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "GetDist");
+        }
+    }
+    protected void GetBlock(int DistId, DropDownList ddl)
+    {
+        try
+        {
+            DataSet dsBlock = new DataSet();
+            dsBlock.ReadXml(Xpath + "/M_BLOCK.xml");
+            if (DistId == 0)
+                DistId = 31;
+            var filter = dsBlock.Tables[0].AsEnumerable().
+                              Where(x => x.Field<string>("DistrictID") == DistId.ToString()).CopyToDataTable();
+
+            ddl.DataSource = filter;
+            ddl.DataTextField = "BlockName";
+            ddl.DataValueField = "BlockID";
+            ddl.DataBind();
+            ddl.Items.Insert(0, new ListItem { Text = "-SELECT-", Value = "0" });
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "GetBlock");
+        }
+    }
+    protected void GetGraduationStream(int PlusTwoStreamID, DropDownList ddl)
+    {
+        try
+        {
+            DataSet dsStream = new DataSet();
+            dsStream.ReadXml(Xpath + "/M_Graduation_STREAM.xml");
+            var filter = dsStream.Tables[0].AsEnumerable().
+                              Where(x => x.Field<string>("PlusTwoStreamID") == PlusTwoStreamID.ToString());//.CopyToDataTable();
+
+            var result = filter.OrderBy(O => (O.Field<string>("GraduationStreamID") == "1" || O.Field<string>("GraduationStreamID") == "2" || O.Field<string>("GraduationStreamID") == "3") ? "A" + O.Field<string>("GraduationStreamName") : O.Field<string>("GraduationStreamName")).ToList().CopyToDataTable();
+            //filter.OrderBy(O => O.Field<string>("GraduationStreamName")).ToList().CopyToDataTable();
+            ddl.DataSource = result;
+            ddl.DataTextField = "GraduationStreamName";
+            ddl.DataValueField = "GraduationStreamID";
+            ddl.DataBind();
+            ddl.Items.Insert(0, new ListItem { Text = "-SELECT-", Value = "0" });
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "GetGraduationStream");
+        }
+    }
+    protected void GetCoreSubject(int StreamID, DropDownList ddl)
+    {
+        try
+        {
+            DataSet dsCoreSubject = new DataSet();
+            dsCoreSubject.ReadXml(Xpath + "/M_PG_Subject.xml");
+            var filter = dsCoreSubject.Tables[0].AsEnumerable().
+                            Where(x => x.Field<string>("Stream1") == StreamID.ToString() ||
+                            x.Field<string>("Stream2") == StreamID.ToString() || x.Field<string>("Stream3") == StreamID.ToString()
+                            || x.Field<string>("Stream4") == StreamID.ToString() || x.Field<string>("Stream5") == StreamID.ToString()
+                            || x.Field<string>("Stream6") == StreamID.ToString() || x.Field<string>("Stream7") == StreamID.ToString()
+                            || x.Field<string>("Stream8") == StreamID.ToString());//.CopyToDataTable();
+            var result = filter.OrderBy(O => O.Field<string>("CoreSubject")).ToList().CopyToDataTable();
+
+            ddl.DataSource = result;
+            ddl.DataTextField = "CoreSubject";
+            ddl.DataValueField = "CoreSubjectId";
+            ddl.DataBind();
+            ddl.Items.Insert(0, new ListItem { Text = "-Select-", Value = "0" });
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "GetCoreSubject");
+        }
+    }
+    protected void GetPGCourse(int HonsID, int Elective1, DropDownList ddl)
+    {
+        try
+        {
+            DataSet dsPGCourse = new DataSet();
+            dsPGCourse.ReadXml(Xpath + "/M_PG_Course.xml");
+            var filter = dsPGCourse.Tables[0].AsEnumerable().
+                            Where(x => x.Field<string>("CoreSubjectID") == HonsID.ToString() ||
+                            x.Field<string>("CoreSubjectID") == Elective1.ToString()
+                            // || x.Field<string>("CoreSubjectID") == Elective2.ToString()
+                            || x.Field<string>("CoreSubjectID") == 43.ToString());//.CopyToDataTable();
+            //added
+            var result = filter.GroupBy(Y => Y.Field<string>("PGCourseId"))
+                           .Select(Y => Y.FirstOrDefault()).OrderBy(o => o.Field<string>("PGCourseName"))
+                          .ToList().CopyToDataTable();
+            //added
+
+            ddl.DataSource = result;//filter;
+            ddl.DataTextField = "PGCourseName";
+            ddl.DataValueField = "PGCourseId";
+            ddl.DataBind();
+            ddl.Items.Insert(0, new ListItem { Text = "-SELECT-", Value = "0" });
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "GetPGCourse");
+        }
+    }
+    #region Get Status of the Course
+    [WebMethod()]
+    public static dynamic CheckStatus()
+    {
+        //string Action = string.Empty;
+        List<CAF> objApplicantList = new List<CAF>();
+        try
+        {
+            using (SAMSPGBusinessClient client = new SAMSPGBusinessClient())
+            {
+                objApplicantList = client.ViewCAFData(new CAF()
+                {
+                    Action = "S",
+                    ApplicantID = 0,
+                    // CourseID = courseID,
+                    UserID = Convert.ToInt32(HttpContext.Current.Session["StudentUserId"].ToString())
+
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "CheckStatus");
+        }
+        return objApplicantList;
+
+    }
+    #endregion
+    protected void ClearBasicInformation()
+    {
+        ddlBoard.SelectedValue = "0";
+        ddlYOP.SelectedValue = "0";
+        rbtnAnnual.Checked = false;
+        rbtnSuppl.Checked = false;
+        txtBoardRoll.Text = string.Empty;
+
+        txtApplName.Text = string.Empty;
+        txtFatherName.Text = string.Empty;
+        txtMotherName.Text = string.Empty;
+
+        //****************** Personal Details ******************
+
+        ddlBloodGroup.SelectedValue = "0";
+        ddlGender.SelectedValue = "0";
+        ddlReligion.SelectedValue = "0";
+        txtDOB.Text = string.Empty;
+
+        //****************** Identification Details ******************
+
+        ddlIDType.SelectedValue = "0";
+        txtAadhar.Text = string.Empty;
+        ddlDomicile.SelectedValue = "0";
+
+        //****************** Address Deatils ******************
+
+        ddlState.SelectedValue = "0";
+        ddlDist.SelectedValue = "0";
+        ddlBlock.SelectedValue = "0";
+        txtAddress.Text = string.Empty;
+        txtPincode.Text = string.Empty;
+        txtMobNo.Text = string.Empty;
+        txtAlternateNo.Text = string.Empty;
+        txtEMail.Text = string.Empty;
+
+    }
+    protected void ClearAdditionalDetails()
+    {
+        rbtGeneral.Checked = false;
+        rbtSC.Checked = false;
+        rbtST.Checked = false;
+        rbtnOBC.Checked = false;
+        rbtSEBC.Checked = false;
+        chkPH.Checked = false;
+        rbtESM.Checked = false;
+        rbtSDP.Checked = false;
+        rbtCoM.Checked = false;
+        //chkNCCA.Checked = false;
+        chkNCCB.Checked = false;
+        chkNCCC.Checked = false;
+        chkNSSUC.Checked = false;
+        chkNSSSC.Checked = false;
+        chkNSSNL.Checked = false;
+        chkNSSIL.Checked = false;
+        chkRP.Checked = false;
+        chkPR.Checked = false;
+        chkSL.Checked = false;
+        chkSGNL.Checked = false;
+        chkSGIL.Checked = false;
+        chkIU.Checked = false;
+
+
+    }
+    protected void ClearEducationalQualification()
+    {
+        rbtnDistnctionYes.Checked = false;
+        rbtnDistinctionNo.Checked = false;
+        rbtnPassed.Checked = false;
+        rbtnAppeared.Checked = false;
+        ddlGraduationHons.SelectedIndex = 0;
+        ddlGraduationElective1.SelectedIndex = 0;
+        ddlCredit.SelectedIndex = 0;
+        ddlGraduationElective2.SelectedIndex = 0;
+        ddlElective1Credit.SelectedIndex = 0;
+        ddlElective2Credit.SelectedIndex = 0;
+        ddlPGEntranceSubject.SelectedIndex = 0;
+        ddlFirstPrefernce.SelectedIndex = 0;
+        ddlSecondPrefernce.SelectedIndex = 0;
+        ddlThirdPrefernce.SelectedIndex = 0;
+        ddlPlusTwoStream.SelectedIndex = 0;
+        ddlGraduationStream.SelectedIndex = 0;
+        ddl10thMarkType.SelectedIndex = 0;
+        ddlPlusTwoMarkType.SelectedIndex = 0;
+        ddlGraduationMarkType.SelectedIndex = 0;
+        ddl10thBoard.SelectedIndex = 0;
+        ddlPlusTwoBoard.SelectedIndex = 0;
+        ddlGraduationBoard.SelectedIndex = 0;
+        ddl10thYOP.SelectedIndex = 0;
+        ddlPlusTwoYOP.SelectedIndex = 0;
+        ddlGraduationYOP.SelectedIndex = 0;
+        txt10thRoll.Text = string.Empty;
+        txtPlusTwoRoll.Text = string.Empty;
+        txtGraduationRoll.Text = string.Empty;
+        txt10thMaxMark.Text = string.Empty;
+        txtPlusTwoMaxMark.Text = string.Empty;
+        txtGraduationMaxMark.Text = string.Empty;
+        txt10thSecuredMark.Text = string.Empty;
+        txtPlusTwoSecuredMark.Text = string.Empty;
+        txtGraduationSecuredMark.Text = string.Empty;
+        txt10thPercentage.Text = string.Empty;
+        txtPlusTwoPercentage.Text = string.Empty;
+        txtGraduationPercentage.Text = string.Empty;
+    }
+    protected List<Education> ConvertQualificationToList()
+    {
+        List<Education> objCAF = new List<Education>();
+
+        try
+        {
+            decimal CGPA10th;
+            decimal CGPA12th;
+            decimal CGPAGraduation;
+            int MaxMark10th;
+            int MaxMark12th;
+            int MaxMarkGraduation;
+            int ObtainedMark10th;
+            int ObtainedMark12th;
+            int ObtainedMarkGraduation;
+            decimal Percentage10th;
+            decimal Percentage12th;
+            decimal PercentageGraduation;
+
+            if (ddl10thMarkType.SelectedValue == "1")
+            {
+                CGPA10th = Convert.ToDecimal(txt10thSecuredMark.Text);
+                MaxMark10th = Convert.ToInt32(txt10thMaxMark.Text);
+                ObtainedMark10th = 0;
+                Percentage10th = Convert.ToDecimal(txt10thPercentage.Text);
+            }
+            else if (ddl10thMarkType.SelectedValue == "3")
+            {
+                CGPA10th = Convert.ToDecimal("0.00");
+                MaxMark10th = Convert.ToInt32(txt10thMaxMark.Text);
+                ObtainedMark10th = Convert.ToInt32(txt10thSecuredMark.Text);
+                Percentage10th = Convert.ToDecimal(txt10thPercentage.Text);
+            }
+            else
+            {
+                CGPA10th = Convert.ToDecimal("0.00");
+                MaxMark10th = 0;
+                ObtainedMark10th = 0;
+                Percentage10th = Convert.ToDecimal("0.00");
+            }
+
+            if (ddlPlusTwoMarkType.SelectedValue == "1")
+            {
+                CGPA12th = Convert.ToDecimal(txtPlusTwoSecuredMark.Text);
+                MaxMark12th = Convert.ToInt32(txtPlusTwoMaxMark.Text);
+                ObtainedMark12th = 0;
+                Percentage12th = Convert.ToDecimal(txtPlusTwoPercentage.Text);
+            }
+            else if (ddlPlusTwoMarkType.SelectedValue == "3")
+            {
+                CGPA12th = Convert.ToDecimal("0.00");
+                MaxMark12th = Convert.ToInt32(txtPlusTwoMaxMark.Text);
+                ObtainedMark12th = Convert.ToInt32(txtPlusTwoSecuredMark.Text);
+                Percentage12th = Convert.ToDecimal(txtPlusTwoPercentage.Text);
+            }
+            else
+            {
+                CGPA12th = Convert.ToDecimal("0.00");
+                MaxMark12th = 0;
+                ObtainedMark12th = 0;
+                Percentage12th = Convert.ToDecimal("0.00");
+            }
+
+            if (ddlGraduationMarkType.SelectedValue == "1")
+            {
+                CGPAGraduation = txtGraduationSecuredMark.Text == "" ? Convert.ToDecimal("0.00") : Convert.ToDecimal(txtGraduationSecuredMark.Text);
+                MaxMarkGraduation = txtGraduationMaxMark.Text == "" ? 0 : Convert.ToInt32(txtGraduationMaxMark.Text);
+                ObtainedMarkGraduation = 0;
+                PercentageGraduation = txtGraduationPercentage.Text == "" ? Convert.ToDecimal("0.00") : Convert.ToDecimal(txtGraduationPercentage.Text);
+            }
+            else if (ddlGraduationMarkType.SelectedValue == "3")
+            {
+                CGPAGraduation = Convert.ToDecimal("0.00");
+                MaxMarkGraduation = txtGraduationMaxMark.Text == "" ? 0 : Convert.ToInt32(txtGraduationMaxMark.Text);
+                ObtainedMarkGraduation = txtGraduationSecuredMark.Text == "" ? 0 : Convert.ToInt32(txtGraduationSecuredMark.Text);
+                // PercentageGraduation = Convert.ToDecimal(txtGraduationPercentage.Text);
+                PercentageGraduation = txtGraduationPercentage.Text == "" ? Convert.ToDecimal("0.00") : Convert.ToDecimal(txtGraduationPercentage.Text);
+            }
+            else
+            {
+                CGPAGraduation = Convert.ToDecimal("0.00");
+                MaxMarkGraduation = txtGraduationMaxMark.Text == "" ? 0 : Convert.ToInt32(txtGraduationMaxMark.Text);
+                ObtainedMarkGraduation = 0;
+                //PercentageGraduation = Convert.ToDecimal("0.00");
+                PercentageGraduation = txtGraduationPercentage.Text == "" ? Convert.ToDecimal("0.00") : Convert.ToDecimal(txtGraduationPercentage.Text);
+            }
+
+            objCAF.Add(new Education
+            {
+
+                ExamID = 1,
+                StreamID = 13,
+                MarkTypeID = Convert.ToInt32(ddl10thMarkType.SelectedValue),
+                BoardTypeID = 1,
+                BoardID = Convert.ToInt32(ddl10thBoard.SelectedValue),
+                YearOfPassing = Convert.ToInt32(ddl10thYOP.SelectedValue),
+                RollNo = txt10thRoll.Text,
+                MaxMark = MaxMark10th,
+                ObtainedMark = ObtainedMark10th,
+                CGPA = CGPA10th,
+                Percentage = Percentage10th,
+                CreatedBy = Convert.ToInt32(Session["StudentUserId"].ToString()),
+                UpdatedBy = Convert.ToInt32(Session["StudentUserId"].ToString()),
+                SubmitStatus = 0,
+            });
+
+            objCAF.Add(new Education
+            {
+                ExamID = 2,
+                StreamID = Convert.ToInt32(ddlPlusTwoStream.SelectedValue),
+                MarkTypeID = Convert.ToInt32(ddlPlusTwoMarkType.SelectedValue),
+                BoardTypeID = 2,
+                BoardID = Convert.ToInt32(ddlPlusTwoBoard.SelectedValue),
+                YearOfPassing = Convert.ToInt32(ddlPlusTwoYOP.SelectedValue),
+                RollNo = txtPlusTwoRoll.Text,
+                MaxMark = MaxMark12th,
+                ObtainedMark = ObtainedMark12th,
+                CGPA = CGPA12th,
+                Percentage = Percentage12th,
+                CreatedBy = Convert.ToInt32(Session["StudentUserId"].ToString()),
+                UpdatedBy = Convert.ToInt32(Session["StudentUserId"].ToString()),
+                SubmitStatus = 0,
+
+            });
+
+            objCAF.Add(new Education
+            {
+                ExamID = 3,
+                StreamID = Convert.ToInt32(hdnGraduationStream.Value),//Convert.ToInt32(ddlGraduationStream.SelectedValue),
+                MarkTypeID = Convert.ToInt32(ddlGraduationMarkType.SelectedValue),
+                BoardTypeID = 3,
+                BoardID = Convert.ToInt32(ddlGraduationBoard.SelectedValue),
+                //YearOfPassing = Convert.ToInt32(ddlGraduationYOP.SelectedValue) == 0 ? 0 : Convert.ToInt32(ddlGraduationYOP.SelectedValue),
+                YearOfPassing = Convert.ToInt32(hdnGYop.Value) == 0 ? 0 : Convert.ToInt32(hdnGYop.Value),
+                RollNo = txtGraduationRoll.Text == "" ? "" : txtGraduationRoll.Text,
+                MaxMark = MaxMarkGraduation,
+                ObtainedMark = ObtainedMarkGraduation,
+                CGPA = CGPAGraduation,
+                Percentage = PercentageGraduation,
+                CreatedBy = Convert.ToInt32(Session["StudentUserId"].ToString()),
+                UpdatedBy = Convert.ToInt32(Session["StudentUserId"].ToString()),
+                SubmitStatus = 0,
+            });
+        }
+
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "ConvertQualificationToList");
+        }
+        finally
+        {
+
+        }
+        return objCAF;
+    }
+    private void BindEntranceSubjectTable(HtmlTable gvPGSubject, List<CAF> listEntranceSubject)
+    {
+        try
+        {
+            HtmlTableRow tr = new HtmlTableRow();
+            tr.Controls.Add(new HtmlTableCell("th") { InnerText = "SL#" });
+
+            HtmlTableCell thPGEntranceSubjectID = new HtmlTableCell("th");
+            thPGEntranceSubjectID.Attributes.Add("style", "display:none");
+            thPGEntranceSubjectID.InnerText = "PGEntranceSubjectID";
+            tr.Controls.Add(thPGEntranceSubjectID);
+
+            tr.Controls.Add(new HtmlTableCell("th") { InnerText = "PG Subject of Admission" });
+
+            HtmlTableCell thCollegePreferenceID = new HtmlTableCell("th");
+            thCollegePreferenceID.Attributes.Add("style", "display:none");
+            thCollegePreferenceID.InnerText = "CollegePreferenceID";
+            tr.Controls.Add(thCollegePreferenceID);
+
+            HtmlTableCell thCollegePreference = new HtmlTableCell("th");
+            thCollegePreference.Attributes.Add("style", "display:none");
+            thCollegePreference.InnerText = "College Preference";
+            tr.Controls.Add(thCollegePreference);
+
+            //tr.Controls.Add(new HtmlTableCell("th") { InnerText = "College Preference" });
+
+            HtmlTableCell thPlustwoStudiedID = new HtmlTableCell("th");
+            thPlustwoStudiedID.Attributes.Add("style", "display:none");
+            thPlustwoStudiedID.InnerText = "CollegePreferenceID";
+            tr.Controls.Add(thPlustwoStudiedID);
+
+            //tr.Controls.Add(new HtmlTableCell("th") { InnerText = "PlustwoStudiedID" });
+            // tr.Controls.Add(new HtmlTableCell("th") { InnerText = "PlustwoStudied" });
+            tr.Controls.Add(new HtmlTableCell("th") { InnerText = "Delete" });
+
+            gvPGSubject.Controls.Add(tr);
+
+
+
+            //string Dataconcate = string.Empty;
+            ////list.Select(o => new { PGSubjectName = o.PGSubjectName, PGSubjectID = o.PGSubjectID }).Distinct();
+            //// for (int i = 0; i < listEntranceSubject.Select(o => new { PGSubjectName = o.PGSubjectName }).Distinct().Count(); i++)
+            for (int i = 0; i < listEntranceSubject.Count; i++)
+
+            {
+
+                //var list= new List<int> { 1, 2, 3, 4, 5 };
+                //if (!Dataconcate.Contains(listEntranceSubject[i].PGSubjectID.ToString()))
+                //{
+
+                HtmlTableRow tr1 = new HtmlTableRow();
+
+                HtmlTableCell tdRowNo = new HtmlTableCell("td");
+                tdRowNo.InnerText = (i + 1).ToString();
+                tr1.Controls.Add(tdRowNo);
+
+                HtmlTableCell tdPGSubjectID = new HtmlTableCell("td");
+                tdPGSubjectID.Attributes.Add("style", "display:none");
+                tdPGSubjectID.Attributes.Add("class", "PGEntranceSubjectCell");
+                tdPGSubjectID.InnerText = listEntranceSubject[i].PGSubjectID.ToString();
+                tr1.Controls.Add(tdPGSubjectID);
+
+                tr1.Controls.Add(new HtmlTableCell("td") { InnerText = listEntranceSubject[i].PGSubjectName.ToString() });
+
+                HtmlTableCell tdCollegePreferenceID = new HtmlTableCell("td");
+                tdCollegePreferenceID.Attributes.Add("style", "display:none");
+                tdCollegePreferenceID.Attributes.Add("class", "CollegePreferenceCell");
+                tdCollegePreferenceID.InnerText = listEntranceSubject[i].CollegePreferenceID.ToString();
+                tr1.Controls.Add(tdCollegePreferenceID);
+
+
+                HtmlTableCell tdCollegePreference = new HtmlTableCell("td");
+                tdCollegePreference.Attributes.Add("style", "display:none");
+                tdCollegePreference.Attributes.Add("class", "CollegePreferenceCell");
+                tdCollegePreference.InnerText = listEntranceSubject[i].CollegeName.ToString();
+                tr1.Controls.Add(tdCollegePreference);
+
+                // tr1.Controls.Add(new HtmlTableCell("td") { InnerText = listEntranceSubject[i].CollegeName.ToString() });
+
+                HtmlTableCell tdPlustwoStudiedID = new HtmlTableCell("td");
+                tdPlustwoStudiedID.Attributes.Add("style", "display:none");
+                tdPlustwoStudiedID.Attributes.Add("class", "PlustwoStudiedIDCell");
+                tdPlustwoStudiedID.InnerText = listEntranceSubject[i].PlustwoStudiedID.ToString();
+                tr1.Controls.Add(tdPlustwoStudiedID);
+
+                //tr1.Controls.Add(new HtmlTableCell("td") { InnerText = listEntranceSubject[i].PlustwoStudiedID.ToString() });
+                //tr1.Controls.Add(new HtmlTableCell("td") { InnerText = listEntranceSubject[i].PlustwoStudied.ToString() });
+                tr1.Controls.Add(new HtmlTableCell("td") { InnerHtml = "<button class='btn btn-xs bigger btn-danger noPrint ace-icon fa fa-trash-o icon-only bigger-80' onclick='return deletePGRow(this); '> </button>" });
+                gvPGSubject.Controls.Add(tr1);
+                //}
+                //Dataconcate = Dataconcate + "," + listEntranceSubject[i].PGSubjectID.ToString();
+            }
+            //Dataconcate = string.Empty;
+        }
+
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "BindEntranceSubjectTable");
+        }
+    }
+    protected void btnSubmit_Click(object sender, EventArgs e)
+    {
+        ActionTrack objTrack = new ActionTrack();
+        objTrack.WriteEventLog("Button_click event of PG Common Application Form");
+
+        if (Session["StudentUserId"] == null || Convert.ToInt32(hdnUserID.Value) != Convert.ToInt32(Session["StudentUserId"]))
+        {
+            Response.Redirect("../SessionOut.aspx?log=1");
+        }
+        else
+        {
+            if (ValidatePhotoServerSide() == true)
+            {
+                string ReturnMsg = "";
+                objClient = new SAMSPGBusinessClient();
+                CAF objCAF = new CAF();
+                try
+                {
+                    SaveBankDetails(sender, e);
+                    //****************** Basic Information ******************
+                    objCAF.Action = "P";
+                    objCAF.ApplicantID = Convert.ToInt32(hdnAppid.Value);
+                    objCAF.ImageStatus = (!string.IsNullOrEmpty(hdnImgAppl.Value)) ? true : false;
+                    ReturnMsg = objClient.AddPhoto(objCAF);
+                    int ReturnValue = Convert.ToInt32(ReturnMsg.Substring(0, 1));
+
+                    string[] strApp = ReturnMsg.Trim().Split('-');
+                    string ImageName = Convert.ToString(strApp[1]);
+
+                    if (!string.IsNullOrEmpty(hdnImgAppl.Value))
+                    {
+                        string pth = ConfigurationManager.AppSettings["StrPath"].ToString();
+                        string Sourcepth = (pth + "\\ImagesTemp_22");
+                        string Destpth = (pth + "\\IMAGES22");
+                        Directory.GetFiles(pth);
+                        string srcName = Sourcepth + "\\" + hdnImgAppl.Value;
+                        string DestName = Destpth + "\\" + ImageName + ".jpg";
+                        if (!Directory.Exists(pth))
+                        {
+                            Directory.CreateDirectory(pth);
+                        }
+
+                        if (File.Exists(srcName))
+                        {
+                            if (File.Exists(DestName))
+                            {
+                                File.Delete(DestName);
+                            }
+                            File.Move(srcName, DestName);
+                        }
+                    }
+                    if (ReturnValue == 1)
+                    {
+                        ScriptManager.RegisterStartupScript(btnSubmit, this.GetType(), "Myalert", "jAlertSubmit('btnSubmit', '<strong>Your record successfully saved in draft mode !</strong>', 'PGCAFConfirm.aspx" + "');", true);
+                    }
+                    else
+                    {
+                        ScriptManager.RegisterStartupScript(btnSubmit, this.GetType(), "Myalert", "jAlertSubmit('btnSubmit', '<strong>Please try after some time !</strong>', 'SessionOut.aspx?log=1" + "');", true);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message + "btnSubmit_Click");
+                }
+                finally
+                {
+                    // ObjPAS = null;
+                }
+            }
+        }
+    }
+    protected void SaveBankDetails(object sender, EventArgs e)
+    {
+        ActionTrack objTrack = new ActionTrack();
+        objTrack.WriteEventLog("Button_click event of PG Common Application Form");
+
+        if (Session["StudentUserId"] == null || Convert.ToInt32(hdnUserID.Value) != Convert.ToInt32(Session["StudentUserId"]))
+        {
+            Response.Redirect("../SessionOut.aspx?log=1");
+        }
+        else
+        {
+            string ReturnMsg = "";
+            objClient = new SAMSPGBusinessClient();
+            CAF objCAF = new CAF();
+            try
+            {
+                objCAF.Action = "X";
+                //objCAF.ApplicantID = Convert.ToInt32(hdnAppid.Value);
+                objCAF.ApplicantID = Convert.ToInt32(Session["StudentUserId"]);
+                objCAF.AccountNo = txtAno.Text.Trim();
+                objCAF.IFSCCode = txtIFSC.Text.Trim();
+                objCAF.MICRCode = txtMICR.Text.Trim();
+                objCAF.BankName = txtBname.Text.Trim();
+                objCAF.BranchName = txtBranchName.Text.Trim();
+                ReturnMsg = objClient.UpdateCollegePreference(objCAF);
+                int ReturnValue = Convert.ToInt32(ReturnMsg.Substring(0, 1));
+                if (ReturnValue == 1)
+                {
+                    ScriptManager.RegisterStartupScript(btnSubmit, this.GetType(), "Myalert", "jAlertSubmit('btnSubmit', '<strong>Record Saved Successfully !</strong>', 'PGCAFConfirm.aspx" + "');", true);
+                }
+                else
+                {
+                    ScriptManager.RegisterStartupScript(btnSubmit, this.GetType(), "Myalert", "jAlertSubmit('btnSubmit', '<strong>Please try after some time !</strong>', 'SessionOut.aspx?log=1" + "');", true);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + "SaveBankDetails");
+            }
+        }
+    }
+    protected void DisableGraduationData(int ExamType)
+    {
+        try
+        {
+            if (ExamType == 2)
+            {
+                // ddlGraduationYOP.Enabled = false;
+                //ddlGraduationYOP.SelectedValue = "2020";
+                txtGraduationRoll.Enabled = false;
+                txtGraduationMaxMark.Enabled = false;
+                txtGraduationSecuredMark.Enabled = false;
+                rbtnDistnctionYes.Checked = false;
+                rbtnDistinctionNo.Checked = false;
+                rbtnDistnctionYes.Enabled = false;
+                rbtnDistinctionNo.Enabled = false;
+
+            }
+            else
+            {
+                ddlGraduationYOP.Enabled = true;
+                txtGraduationRoll.Enabled = true;
+                txtGraduationMaxMark.Enabled = true;
+                txtGraduationSecuredMark.Enabled = true;
+                rbtnDistnctionYes.Enabled = true;
+                rbtnDistinctionNo.Enabled = true;
+
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "DisableGraduationData");
+        }
+
+    }
+    [WebMethod()]
+    public static dynamic CheckPGCourse(int PGCourseID)
+    {
+        try
+        {
+            XDocument xdoc = default(XDocument);
+            xdoc = XDocument.Load(Xpath + "/M_PG_Course.xml");
+            dynamic qry1 = new { };
+            qry1 = (from p in xdoc.Descendants("NewDataSetSub").Elements("Table")
+                    where Convert.ToInt32(p.Element("PGCourseId").Value) == PGCourseID
+                    select new { CoreSubjectID = p.Element("CoreSubjectID").Value, CreditPoint = p.Element("CreditPoint").Value }).GroupBy(x => x.CoreSubjectID)
+                               .Select(x => x.FirstOrDefault())
+                              .ToList();
+
+            return qry1;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "CheckPGCourse");
+        }
+    }
+    public string EncryptString(string key, string plainText)
+
+    {
+
+        byte[] iv = new byte[16];
+
+        byte[] array;
+
+
+
+        using (System.Security.Cryptography.SymmetricAlgorithm aes = System.Security.Cryptography.SymmetricAlgorithm.Create())
+
+        {
+
+            aes.KeySize = 128;
+
+            aes.BlockSize = 128;
+
+            aes.Key = Encoding.UTF8.GetBytes(key);
+
+            aes.IV = iv;
+
+
+
+            ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+
+
+
+            using (MemoryStream memoryStream = new MemoryStream())
+
+            {
+
+                using (CryptoStream cryptoStream = new CryptoStream((Stream)memoryStream, encryptor, CryptoStreamMode.Write))
+
+                {
+
+                    using (StreamWriter streamWriter = new StreamWriter((Stream)cryptoStream))
+
+                    {
+
+                        streamWriter.Write(plainText);
+
+                    }
+
+
+
+                    array = memoryStream.ToArray();
+
+                }
+
+            }
+
+        }
+
+
+
+        return Convert.ToBase64String(array);
+
+    }
+    string Msg = string.Empty;
+    public bool ValidateServerSide()
+    {
+        try
+        {
+            //Added new validations by Devee Ray on 08-July-2021
+            if (ddlBoard.SelectedValue == "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Name of the Examination Board!</strong>','SAMS');", true);
+                return false;
+            }
+            if (ddlYOP.SelectedValue == "0" && hdnYOP.Value == "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Year of Passing!</strong>','SAMS');", true);
+                return false;
+            }
+            if (!rbtnAnnual.Checked && !rbtnSuppl.Checked)
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Exam Type!</strong>','SAMS');", true);
+                return false;
+            }
+            if (string.IsNullOrEmpty(txtBoardRoll.Text.Trim()))
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please enter Roll Number!</strong>','SAMS');", true);
+                return false;
+            }
+            if (string.IsNullOrEmpty(txtApplName.Text.Trim()))
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please enter Applicant Name!</strong>','SAMS');", true);
+                return false;
+            }
+            if (string.IsNullOrEmpty(txtFatherName.Text.Trim()))
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please enter Father Name!</strong>','SAMS');", true);
+                return false;
+            }
+            if (string.IsNullOrEmpty(txtMotherName.Text.Trim()))
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please enter Mother Name!</strong>','SAMS');", true);
+                return false;
+            }
+            //if (ddlBloodGroup.SelectedValue == "0")
+            //{
+            //    ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Blood Group!</strong>','SAMS');", true);
+            //    return false;
+            //}
+            if (ddlGender.SelectedValue == "0" && hdnGender.Value == "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Gender!</strong>','SAMS');", true);
+                return false;
+            }
+            //if (ddlReligion.SelectedValue == "0")
+            //{
+            //    ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Religion!</strong>','SAMS');", true);
+            //    return false;
+            //}
+            if (string.IsNullOrEmpty(txtDOB.Text.Trim()))
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please enter Date of Birth!</strong>','SAMS');", true);
+                return false;
+            }
+            if (ddlIDType.SelectedValue == "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Identification Type!</strong>','SAMS');", true);
+                return false;
+            }
+            if (string.IsNullOrEmpty(txtAadhar.Text.Trim()))
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please enter Identification No!</strong>','SAMS');", true);
+                return false;
+            }
+            if (ddlDomicile.SelectedValue == "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select State of Domicile!</strong>','SAMS');", true);
+                return false;
+            }
+            if (ddlState.SelectedValue == "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select State!</strong>','SAMS');", true);
+                return false;
+            }
+            if (hdnDist.Value == "0" && ddlDist.SelectedValue == "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select District!!!</strong>','SAMS');", true);
+                return false;
+            }
+            if (hdnBlock.Value == "0" && ddlBlock.SelectedValue == "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Block/ULB!!!</strong>','SAMS');", true);
+                return false;
+            }
+            if (string.IsNullOrEmpty(txtAddress.Text.Trim()))
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please enter Details(Plot/Flat/Building/Village)!</strong>','SAMS');", true);
+                return false;
+            }
+            if (string.IsNullOrEmpty(txtPincode.Text.Trim()))
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please enter Pincode!</strong>','SAMS');", true);
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(txtEMail.Text.Trim()))
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please enter e-Mail!</strong>','SAMS');", true);
+                return false;
+            }
+
+
+            if (hdnPaymentStatus.Value != "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Modification is not allowed as you have already initiated/completed your payment!</strong>','SAMS');", true);
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "ValidateServerSide");
+        }
+    }
+    public bool ValidateAdditionalDetailsServerSide()
+    {
+        try
+        {
+            if (rbtST.Checked == false && rbtSC.Checked == false && rbtnOBC.Checked == false && rbtSEBC.Checked == false && rbtGeneral.Checked == false)
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please Choose Reservation Details!</strong>','SAMS');", true);
+                return false;
+            }
+            if (rbtESM.Checked == false && rbtCoM.Checked == false && rbtSDP.Checked == false && rbtNon.Checked == false)
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please Choose Reservation Details!</strong>','SAMS');", true);
+                return false;
+            }
+
+            if (chkPH.Checked == true)
+            {
+                if (rbtnTempDis.Checked == true || rbtnPerDis.Checked == true)
+                {
+                    if (chkBlind.Checked == true || chkHearing.Checked == true || chkPalsy.Checked == true || chkLeprosy.Checked == true || chkDwarf.Checked == true || chkAcid.Checked == true || chkMuscular.Checked == true || chkAutism.Checked == true || chkIntellect.Checked == true || chkLearning.Checked == true || chkMental.Checked == true)
+                    {
+                        if (rbtnPerDis.Checked == true)
+                        {
+                            if (txtDisabilityPercentage.Text != "0" && txtDisabilityPercentage.Text != "")
+                            {
+                                if (Convert.ToInt32(txtDisabilityPercentage.Text) >= 40 && Convert.ToInt32(txtDisabilityPercentage.Text) <= 100)
+                                {
+                                    return true;
+                                }
+                                else
+                                {
+                                    ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Disability Percentage should be between 40 and 100</strong>','SAMS');", true);
+                                    return false;
+                                }
+                            }
+                            else
+                            {
+                                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Disability Percentage can not be 0 or blank</strong>','SAMS');", true);
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Disability Type!</strong>','SAMS');", true);
+                        return false;
+                    }
+                }
+                else
+                {
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please Choose PWD Disability!</strong>','SAMS');", true);
+                    return false;
+                }
+            }
+
+            else
+            {
+                return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "ValidateAdditionalDetailsServerSide");
+        }
+    }
+    public bool ValidateEducationalDetailsServerSide()
+    {
+        try
+        {
+            if (rbtnPassed.Checked == false && rbtnAppeared.Checked == false)
+            {
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please Choose Graduation Examination!</strong>','SAMS');", true);
+                lblvalidator.Text = "Please Choose Graduation Examination!";
+                return false;
+
+            }
+            if (rbtnPassed.Checked == true)
+            {
+                if (rbtnDistnctionYes.Checked == false && rbtnDistinctionNo.Checked == false)
+                {
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please Choose whether you have Passed with Distinction!</strong>','SAMS');", true);
+                    lblvalidator.Text = "Please Choose whether you have Passed with Distinction!";
+                    return false;
+                }
+            }
+
+            if (ddl10thMarkType.SelectedValue == "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select 10th Mark Type!</strong>','SAMS');", true);
+                lblvalidator.Text = "Please select 10th Mark Type!";
+                return false;
+            }
+            if (ddl10thBoard.SelectedValue == "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select 10th Board!</strong>','SAMS');", true);
+                lblvalidator.Text = "Please select 10th Board!";
+                return false;
+            }
+            if (ddl10thYOP.SelectedValue == "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select 10th Year Of Passing!</strong>','SAMS');", true);
+                lblvalidator.Text = "Please select 10th Year Of Passing!";
+                return false;
+            }
+            if (string.IsNullOrEmpty(txt10thRoll.Text.Trim()))
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please enter 10th Roll No.!</strong>','SAMS');", true);
+                lblvalidator.Text = "Please enter 10th Roll No.!";
+                return false;
+            }
+            if (string.IsNullOrEmpty(txt10thMaxMark.Text.Trim()))
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please enter 10th Maximum Mark!</strong>','SAMS');", true);
+                lblvalidator.Text = "Please enter 10th Maximum Mark!";
+                return false;
+            }
+            if (string.IsNullOrEmpty(txt10thSecuredMark.Text.Trim()))
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please enter 10th Secured Mark!</strong>','SAMS');", true);
+                lblvalidator.Text = "Please enter 10th Secured Mark!";
+                return false;
+            }
+            if (!string.IsNullOrEmpty(txt10thPercentage.Text.Trim()))
+            {
+                if (Convert.ToDecimal(txt10thPercentage.Text) < 33)
+                {
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>10th Percentage cannot be less than 33!</strong>','SAMS');", true);
+                    lblvalidator.Text = "10th Percentage cannot be less than 33!";
+                    return false;
+                }
+            }
+
+            if (ddlPlusTwoStream.SelectedValue == "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Plus Two Stream!</strong>','SAMS');", true);
+                lblvalidator.Text = "Please select Plus Two Stream!";
+                return false;
+            }
+            if (ddlPlusTwoMarkType.SelectedValue == "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Plus Two Mark Type!</strong>','SAMS');", true);
+                lblvalidator.Text = "Please select Plus Two Mark Type!";
+                return false;
+            }
+            if (ddlPlusTwoBoard.SelectedValue == "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Plus Two Board!</strong>','SAMS');", true);
+                lblvalidator.Text = "Please select Plus Two Board!";
+                return false;
+            }
+            if (ddlPlusTwoYOP.SelectedValue == "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Plus Two Year Of Passing!</strong>','SAMS');", true);
+                lblvalidator.Text = "Please select Plus Two Year Of Passing!";
+                return false;
+            }
+
+            if (ddlPlusTwoYOP.SelectedValue != "0")
+            {
+                int yr = Convert.ToInt32(ddl10thYOP.SelectedValue) + 2;
+                if (Convert.ToInt32(ddlPlusTwoYOP.SelectedValue) < yr)
+                {
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Plus two Year Of Passing should be 2 years after Matric Year Of Passing!</strong>','SAMS');", true);
+                    lblvalidator.Text = "Plus two Year Of Passing should be 2 years after Matric Year Of Passing!";
+                    return false;
+                }
+            }
+
+            if (string.IsNullOrEmpty(txtPlusTwoRoll.Text.Trim()))
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please enter Plus Two Roll No.!</strong>','SAMS');", true);
+                lblvalidator.Text = "Please enter Plus Two Roll No.!";
+                return false;
+            }
+            if (string.IsNullOrEmpty(txtPlusTwoMaxMark.Text.Trim()))
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please enter Plus Two Maximum Mark!</strong>','SAMS');", true);
+                lblvalidator.Text = "Please enter Plus Two Maximum Mark!";
+                return false;
+            }
+            if (string.IsNullOrEmpty(txtPlusTwoSecuredMark.Text.Trim()))
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please enter Plus Two Secured Mark!</strong>','SAMS');", true);
+                lblvalidator.Text = "Please enter Plus Two Secured Mark!";
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(txtPlusTwoPercentage.Text.Trim()))
+            {
+                if (Convert.ToDecimal(txtPlusTwoPercentage.Text) < 33)
+                {
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Plus Two Percentage cannot be less than 33!</strong>','SAMS');", true);
+                    lblvalidator.Text = "Plus Two Percentage cannot be less than 33!";
+                    return false;
+                }
+            }
+
+            // if (hdnGraduationStream.Value == "0" && ddlGraduationStream.SelectedValue == "0")//comment line for check serverside validation 19/06/2022
+
+            if (hdnGraduationStream.Value == "0" && ddlGraduationStream.SelectedIndex.ToString() == "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Graduation Stream!!</strong>','SAMS');", true);
+                lblvalidator.Text = "Please select Graduation Stream!!";
+                return false;
+            }
+
+            if (ddlGraduationMarkType.SelectedValue == "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Graduation Mark Type!</strong>','SAMS');", true);
+                lblvalidator.Text = "Please select Graduation Mark Type!";
+                return false;
+            }
+            if (ddlGraduationBoard.SelectedValue == "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Graduation Board!</strong>','SAMS');", true);
+                lblvalidator.Text = "Please select Graduation Board!";
+                return false;
+            }
+            //if (hdnGYop.Value == "0" && ddlGraduationYOP.SelectedValue == "0")
+            if (hdnGYop.Value == "0" && ddlGraduationYOP.SelectedValue == "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Graduation Year Of Passing!</strong>','SAMS');", true);
+                lblvalidator.Text = "Please select Graduation Year Of Passing!";
+                return false;
+            }
+
+            if (hdnGYop.Value != "0")
+            {
+                int yr1 = Convert.ToInt32(ddlPlusTwoYOP.SelectedValue) + 3;
+                if (Convert.ToInt32(hdnGYop.Value) < yr1)
+                {
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Graduation Year Of Passing should be 3 years after Plus Two Year Of Passing!</strong>','SAMS');", true);
+                    lblvalidator.Text = "Graduation Year Of Passing should be 3 years after Plus Two Year Of Passing!";
+                    return false;
+                }
+            }
+
+            //if (hdnGYop.Value != "0")// for BTECH/BE
+            //{
+            //    if (hdnGraduationStream.Value == "4" || hdnGraduationStream.Value == "5")
+            //    {
+            //        int yr2 = Convert.ToInt32(ddlPlusTwoYOP.SelectedValue) + 4;
+            //        if (Convert.ToInt32(hdnGYop.Value) < yr2)
+            //        {
+            //            ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Graduation Year Of Passing should be 4 years after Plus Two Year Of Passing!</strong>','SAMS');", true);
+            //            return false;
+            //        }
+            //    }
+            //}
+
+
+
+            if (rbtnAppeared.Checked == true)
+            {
+                string currentYear = DateTime.Now.Year.ToString();
+                if (hdnGYop.Value != currentYear)
+                {
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Graduation Year Of Passing cannot be less than </strong>' + '<strong>' + currentYear + '</strong >','SAMS');", true);
+                    lblvalidator.Text = "Graduation Year Of Passing cannot be less than currentYear ";
+                    return false;
+                }
+            }
+            if (rbtnPassed.Checked == true)
+            {
+                if (string.IsNullOrEmpty(txtGraduationRoll.Text.Trim()))
+                {
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please enter Graduation Roll No.!</strong>','SAMS');", true);
+                    lblvalidator.Text = "Please enter Graduation Roll No.! ";
+                    return false;
+                }
+                if (string.IsNullOrEmpty(txtGraduationMaxMark.Text.Trim()) && rbtnAppeared.Checked == false)
+                {
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please enter Graduation Maximum Mark!</strong>','SAMS');", true);
+                    lblvalidator.Text = "Please enter Graduation Maximum Mark!";
+                    return false;
+                }
+                if (string.IsNullOrEmpty(txtGraduationSecuredMark.Text.Trim()) && rbtnAppeared.Checked == false)
+                {
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please enter Graduation Secured Mark!</strong>','SAMS');", true);
+                    lblvalidator.Text = "Please enter Graduation Secured Mark!";
+                    return false;
+                }
+            }
+
+            if (ddl10thMarkType.SelectedValue == "1")
+            {
+                txt10thMaxMark.Text = "10";
+                int ten = 10;
+                if (Convert.ToInt32(txt10thMaxMark.Text) > ten)
+                {
+
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Secured CGPA  cannot be greater than 10!</strong>','SAMS');", true);
+                    lblvalidator.Text = "Secured CGPA  cannot be greater than 10!";
+                    return false;
+                }
+            }
+
+            if (hdnGraduationStream.Value == "1" || hdnGraduationStream.Value == "2" || hdnGraduationStream.Value == "3")
+            {
+                if (hdngraduationPassedWith.Value == "0" && rbtnHonours.Checked == false && rbtnPass.Checked == false)
+                {
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please Choose Passed Graduation With Honours/Pass!</strong>','SAMS');", true);
+                    lblvalidator.Text = "Please Choose Passed Graduation With Honours/Pass!";
+                    return false;
+                }
+            }
+
+            //if (hdnGraduationStream.Value == "1" || hdnGraduationStream.Value == "2" || hdnGraduationStream.Value == "3")
+            //{
+            //    var HonsMsg = "";
+            //    //if (rbtnHonours.Checked)
+            //    if(hdngraduationPassedWith.Value == "1")
+            //    {
+            //         HonsMsg = "Core/Hons";
+            //    }
+            //    //if (rbtnPass.Checked)
+            //    if (hdngraduationPassedWith.Value == "2")
+            //    {
+            //        if (hdnGraduationStream.Value == "1" || hdnGraduationStream.Value == "2") {
+            //            if (Convert.ToInt32(hdnGYop.Value) < 2016)
+            //            {
+            //                 HonsMsg = "Subject Paper1";
+            //            }
+            //            else
+            //            {
+            //                 HonsMsg = "Discipline Specific Core1";
+            //            }
+            //        }
+            //        else if(hdnGraduationStream.Value == "3")
+            //        {
+            //            if (Convert.ToInt32(hdnGYop.Value) >= 2016)
+            //            {
+            //                 HonsMsg = "Discipline Specific Core1";
+            //            }
+            //            else
+            //            {
+            //                 HonsMsg = "Pass Paper1";
+            //            }
+            //        }
+            //    }
+
+            //    if (hdnHons.Value == "0" && ddlGraduationHons.SelectedValue == "0")
+            //    {
+            //        ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select </strong>' + '<strong>" + HonsMsg + "</strong >','SAMS');", true);
+            //    }
+            //    if (hdnHonsCredit.Value == "0" && ddlCredit.SelectedValue == "0")
+            //    {
+            //        ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Credit!</strong>','SAMS');", true);
+            //        return false;
+            //    }
+            //}
+
+            //var electivemsg = "";
+            ////if (rbtnHonours.Checked)
+            //if (hdngraduationPassedWith.Value == "1")
+            //{
+            //    electivemsg = "Generic Elective";
+            //}
+            ////if (rbtnPass.Checked)
+            //if (hdngraduationPassedWith.Value == "2")
+            //{
+            //    if (hdnGraduationStream.Value == "1" || hdnGraduationStream.Value == "2")
+            //    {
+            //        if (Convert.ToInt32(hdnGYop.Value) < 2016)
+            //        {
+            //            electivemsg = "Pass Paper2";
+            //        }
+            //        else
+            //        {
+            //            electivemsg = "Discipline Specific Core2";
+            //        }
+            //    }
+            //    else if (hdnGraduationStream.Value == "3")
+            //    {
+            //        if (Convert.ToInt32(hdnGYop.Value) >= 2016)
+            //        {
+            //            //electivemsg = "Discipline Specific Core1";
+            //        }
+            //        else
+            //        {
+            //            electivemsg = "Pass Paper2";
+            //        }
+            //    }
+            //}
+            ////if (rbtnPass.Checked)
+            //if (hdngraduationPassedWith.Value == "2")
+            //{
+            //    if (hdnGraduationStream.Value == "1" || hdnGraduationStream.Value == "2")
+            //    {
+            //        if (hdnElective1.Value == "0")
+            //        {
+            //            ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select </strong>' + '<strong>" + electivemsg + "</strong >','SAMS');", true);
+            //            return false;
+            //        }
+            //        if (hdnGraduationStream.Value == "1" || hdnGraduationStream.Value == "2")
+            //        {
+            //            if (hdnElective1Credit.Value == "0")
+            //            {
+            //                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Credit</strong>','SAMS');", true);
+            //                return false;
+            //            }
+            //        }
+            //    }
+            //}
+
+            //if (hdnElective1.Value != "0")
+            //{
+            //    if (hdnElective1Credit.Value == "0")
+            //    {
+            //        ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Credit</strong>','SAMS');", true);
+            //        return false;
+            //    }
+            //}
+
+            ////if (rbtnPass.Checked)
+            //if (hdngraduationPassedWith.Value == "2")
+            //{
+            //    if (hdnGraduationStream.Value == "3" && Convert.ToInt32(hdnGYop.Value) < 2016) {
+
+            //        if (hdnElective1.Value == "0")
+            //        {
+            //            ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select </strong>' + '<strong>" + electivemsg + "</strong >','SAMS');", true);
+            //            return false;
+            //        }
+            //        if (hdnElective1Credit.Value == "0")
+            //        {
+            //            ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Credit</strong>','SAMS');", true);
+            //            return false;
+            //        }
+            //    }
+            //}
+
+            //if (hdnGraduationStream.Value == "1" || hdnGraduationStream.Value == "2")
+            //{
+            //    var electivemsg2 = "";
+
+            //    //if (rbtnPass.Checked)
+            //    if (hdngraduationPassedWith.Value == "2")
+            //    {
+            //        if (hdnGraduationStream.Value == "1" || hdnGraduationStream.Value == "2")
+            //        {
+            //            if (Convert.ToInt32(hdnGYop.Value) < 2016)
+            //            {
+            //               // electivemsg2 = "Pass Paper2";
+            //            }
+            //            else
+            //            {
+            //                electivemsg2 = "Discipline Specific Core3";
+            //            }
+            //        }
+            //    }
+
+            //    if (hdngraduationPassedWith.Value == "2" && Convert.ToInt32(hdnGYop.Value) >= 2016)
+            //    { 
+            //        if (hdnElective2.Value == "0")
+            //        {
+            //            ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select </strong>' + '<strong>" + electivemsg2 + "</strong >','SAMS');", true);
+            //            return false;
+            //        }
+            //        if (hdnElective2Credit.Value == "0")
+            //        {
+            //            ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Credit</strong>','SAMS');", true);
+            //            return false;
+            //        }
+            //    }
+            //}
+
+            if (rbtnMFPNo.Checked)
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>You are not eligible to apply.</strong>','SAMS');", true);
+                lblvalidator.Text = "You are not eligible to apply.";
+                return false;
+            }
+
+            if (hdnGraduationStream.Value != "6"
+                && hdnGraduationStream.Value != "7"
+                && hdnGraduationStream.Value != "8"
+                && hdnGraduationStream.Value != "9"
+                && hdnGraduationStream.Value != "10"
+                && hdnGraduationStream.Value != "3"
+                && hdnGraduationStream.Value != "14"
+                && hdnGraduationStream.Value != "15"
+                && hdnGraduationStream.Value != "16"
+                && hdnGraduationStream.Value != "17"
+                && hdnHons.Value != "49"
+                && hdnElective1.Value != "49"
+                && hdnHons.Value != "50"
+                && hdnElective1.Value != "50"
+                )
+            {
+                if (hdnHons.Value == hdnElective1.Value)
+                {
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Core and Elective cannot be same.</strong>','SAMS');", true);
+                    lblvalidator.Text = "Core and Elective cannot be same.";
+                    return false;
+                }
+            }
+
+            if (ddlFirstPrefernce.SelectedValue == "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select First Prefernce</strong>','SAMS');", true);
+                lblvalidator.Text = "Please select First Prefernce";
+                return false;
+            }
+            if (ddlSecondPrefernce.SelectedValue == "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Second Prefernce</strong>','SAMS');", true);
+                lblvalidator.Text = "Please select Second Prefernce";
+                return false;
+            }
+            if (ddlThirdPrefernce.SelectedValue == "0")
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please select Third Prefernce</strong>','SAMS');", true);
+                lblvalidator.Text = "Please select Third Prefernce";
+                return false;
+            }
+
+            if (ddlFirstPrefernce.SelectedValue == ddlSecondPrefernce.SelectedValue)
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Same Centre can not selected more than once</strong>','SAMS');", true);
+                lblvalidator.Text = "Same Centre can not selected more than once";
+                return false;
+            }
+            if (ddlFirstPrefernce.SelectedValue == ddlThirdPrefernce.SelectedValue)
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Same Centre can not selected more than once</strong>','SAMS');", true);
+                lblvalidator.Text = "Same Centre can not selected more than once";
+                return false;
+            }
+            if (ddlSecondPrefernce.SelectedValue == ddlThirdPrefernce.SelectedValue)
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Same Centre can not selected more than once</strong>','SAMS');", true);
+                lblvalidator.Text = "Same Centre can not selected more than once";
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "ValidateEducationalDetailsServerSide");
+        }
+    }
+    public string GetActivation(int id)
+    {
+        Reports obj = new Reports();
+
+        try
+        {
+            using (SAMSPGBusinessClient client = new SAMSPGBusinessClient())
+            {
+                List<Reports> list = new List<Reports>();
+                obj.Action = "MT";
+                obj.DistrictID = id;
+                list = client.ViewIntake(obj);
+                if (list.Count > 0)
+                {
+                    return "1";
+                }
+                else
+                {
+                    return "0";
+                }
+
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "GetActivation");
+        }
+    }
+    public bool ValidatePhotoServerSide()
+    {
+        try
+        {
+            if (hdnImgAppl.Value == "")
+        {
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please upload Photo!</strong>','SAMS');", true);
+            return false;
+        }
+        if (string.IsNullOrEmpty(txtAno.Text.Trim()))
+        {
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please enter Account No.!</strong>','SAMS');", true);
+            return false;
+        }
+        if (string.IsNullOrEmpty(txtIFSC.Text.Trim()))
+        {
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please enter IFSC Code!</strong>','SAMS');", true);
+            return false;
+        }
+        if (string.IsNullOrEmpty(txtBname.Text.Trim()))
+        {
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please enter Bank Name!</strong>','SAMS');", true);
+            return false;
+        }
+        if (string.IsNullOrEmpty(txtBranchName.Text.Trim()))
+        {
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "Myalert", "jAlert('', '<strong>Please enter Branch Name!</strong>','SAMS');", true);
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message + "ValidatePhotoServerSide");
+        }
+    }
+
+    //protected void ddlState_SelectedIndexChanged(object sender, EventArgs e)
+    //{
+    //    //DataSet ddlDataSource = new DataSet();
+    //    //DataView dvSource = default(DataView);
+
+    //    //ddlDist.Items.Clear();
+
+    //    //ddlDataSource.ReadXml(Xpath + "/M_DISTRICT.xml");
+    //    //dvSource = ddlDataSource.Tables[0].DefaultView;
+    //    //dvSource.Sort = "DistrictName";
+    //    //ddlDist.DataSource = dvSource;
+    //    //ddlDist.DataTextField = "DistrictName";
+    //    //ddlDist.DataValueField = "DistrictID";
+    //    //ddlDist.DataBind();
+    //    //ddlDist.Items.Insert(0, new ListItem("--SELECT--", "0"));
+    //    GetDist(Convert.ToInt32(ddlState.SelectedValue), ddlDist);
+    //}
+
+    //protected void ddlDist_SelectedIndexChanged(object sender, EventArgs e)
+    //{
+    //    GetBlock(Convert.ToInt32(ddlDist.SelectedValue), ddlBlock);
+    //}
+}
+
+public class Education
+{
+
+    public int ExamID { get; set; }
+
+    public int StreamID { get; set; }
+    public int MarkTypeID { get; set; }
+    public int BoardTypeID { get; set; }
+
+    public int BoardID { get; set; }
+
+    public int YearOfPassing { get; set; }
+    public string RollNo { get; set; }
+    public int MaxMark { get; set; }
+
+    public int ObtainedMark { get; set; }
+
+    public decimal CGPA { get; set; }
+
+    public int Grade { get; set; }
+    public decimal Percentage { get; set; }
+
+    public int UpdatedBy { get; set; }
+    public int CreatedBy { get; set; }
+    public int SubmitStatus { get; set; }
+}
